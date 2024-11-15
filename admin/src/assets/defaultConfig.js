@@ -1,15 +1,5 @@
 export const defaultConfig = {
-  "title": "",
-  "subtitle": "",
-  "email": "",
-  "location": "",
-  "menu": [
-    {
-      "title": "Home",
-      "path": "/",
-      "markdownFile": null
-    },
-  ],
-  "externalLinks": [],
-  "userCssFile": null,
+  "title": "Mint",
+  "subtitle": "To mint is a human right.",
+  "creatorAddress": "0xe11Da9560b51f8918295edC5ab9c0a90E9ADa20B"
 };

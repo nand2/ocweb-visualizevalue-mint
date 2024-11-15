@@ -1,9 +1,9 @@
 import { getContract, toHex, walletActions, publicActions } from 'viem'
 
-import { abi as themeAboutMePluginABI } from './abi'
+import { abi as visualizeValueMintPluginABI } from './abi'
 
 
-class ThemeAboutMePluginClient {
+class VisualizeValueMintPluginClient {
   #viemClient = null
   #websiteContractAddress = null
   #pluginContractAddress = null
@@ -16,7 +16,7 @@ class ThemeAboutMePluginClient {
 
     this.#viemPluginContract = getContract({
       address: this.#pluginContractAddress,
-      abi: themeAboutMePluginABI,
+      abi: visualizeValueMintPluginABI,
       client: this.#viemClient,
     })
   }
@@ -39,7 +39,7 @@ class ThemeAboutMePluginClient {
   async executeTransaction(transaction) {
     const { request } = await this.#viemClient.simulateContract({
       address: this.#pluginContractAddress,
-      abi: themeAboutMePluginABI,
+      abi: visualizeValueMintPluginABI,
       functionName: transaction.functionName,
       args: transaction.args,
     })
@@ -57,4 +57,4 @@ class ThemeAboutMePluginClient {
 
 }
 
-export { ThemeAboutMePluginClient };
+export { VisualizeValueMintPluginClient };

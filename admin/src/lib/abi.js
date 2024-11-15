@@ -77,6 +77,11 @@ export const abi = [
             internalType: "string[]",
             name: "rootPath",
             type: "string[]"
+          },
+          {
+            internalType: "enum",
+            name: "theme",
+            type: "uint8"
           }
         ],
         internalType: "struct ThemeAboutMePlugin.Config",
@@ -331,6 +336,11 @@ export const abi = [
             internalType: "string[]",
             name: "rootPath",
             type: "string[]"
+          },
+          {
+            internalType: "enum",
+            name: "theme",
+            type: "uint8"
           }
         ],
         internalType: "struct ThemeAboutMePlugin.Config",

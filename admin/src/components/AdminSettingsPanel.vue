@@ -8,7 +8,7 @@ import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendFile
 
 import PencilSquareIcon from './Icons/PencilSquareIcon.vue';
 import { defaultConfig } from '../assets/defaultConfig';
-import { ThemeAboutMePluginClient } from '../lib/client.js';
+import { VisualizeValueMintPluginClient } from '../lib/client.js';
 
 const props = defineProps({
   contractAddress: {
@@ -44,8 +44,8 @@ const props = defineProps({
 const queryClient = useQueryClient()
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
 
-const themeAboutMePluginClient = computed(() => {
-  return viemClientLoaded.value ? new ThemeAboutMePluginClient(viemClient.value, props.contractAddress, props.pluginInfos.plugin) : null;
+const visualizeValueMintPluginClient = computed(() => {
+  return viemClientLoaded.value ? new VisualizeValueMintPluginClient(viemClient.value, props.contractAddress, props.pluginInfos.plugin) : null;
 })
 
 // Get the lock status
@@ -55,10 +55,10 @@ const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching
 const { data: config, isLoading: configLoading, isFetching: configFetching, isError: configIsError, error: configError, isSuccess: configLoaded } = useQuery({
   queryKey: ['OCWebsiteVersionPluginConfig', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
   queryFn: async () => {
-    const result = await themeAboutMePluginClient.value.getConfig(props.websiteVersionIndex);
+    const result = await visualizeValueMintPluginClient.value.getConfig(props.websiteVersionIndex);
     return result;
   },
-  enabled: computed(() => themeAboutMePluginClient.value != null),
+  enabled: computed(() => visualizeValueMintPluginClient.value != null),
 })
 
 // Load the unserialized root path
@@ -67,15 +67,30 @@ watch(config, () => {
   rootPathFieldValue.value = config.value.rootPath.join("/")
 })
 
+// Load the theme
+const themeFieldValue = ref(configLoaded.value ? config.value.theme : 0)
+watch(config, () => {
+  themeFieldValue.value = config.value.theme
+})
+
+// The list of available themes
+const availableThemes = [{
+  id: 0,
+  name: "Base"
+}, {
+  id: 1,
+  name: "Zinc"
+}]
+
 const showForm = ref(false)
 
 // Save the config
 const { isPending: saveIsPending, isError: saveIsError, error: saveError, isSuccess: saveIsSuccess, mutate: saveMutate, reset: saveReset } = useMutation({
   mutationFn: async () => {
     // Prepare the transaction
-    const transaction = await themeAboutMePluginClient.value.prepareSetConfigTransaction(props.websiteVersionIndex, { rootPath: rootPathFieldValue.value.split('/').filter(part => part != "") });
+    const transaction = await visualizeValueMintPluginClient.value.prepareSetConfigTransaction(props.websiteVersionIndex, { rootPath: rootPathFieldValue.value.split('/').filter(part => part != ""), theme: themeFieldValue.value });
     console.log(transaction)
-    const hash = await themeAboutMePluginClient.value.executeTransaction(transaction);
+    const hash = await visualizeValueMintPluginClient.value.executeTransaction(transaction);
   },
   onSuccess: () => {
     showForm.value = false
@@ -87,7 +102,7 @@ const save = async () => {
   // We process the root path: Remove invalid stuff
   rootPathFieldValue.value = rootPathFieldValue.value.split("#")[0].split("?")[0].split("/").map(part => part.trim()).filter(part => part != "").join("/");
 
-  if(rootPathFieldValue.value == config.value.rootPath.join("/")) {
+  if(rootPathFieldValue.value == config.value.rootPath.join("/") && themeFieldValue.value == config.value.theme) {
     showForm.value = false
     return
   }
@@ -100,8 +115,8 @@ const save = async () => {
 <template>
   <div class="admin">
 
-    <div>
-      <label>Root path <small>Path where the theme is served</small></label>
+    <div class="form-field">
+      <label>Root path <small>Path where the app is served</small></label>
 
       <div style="font-size: 0.9em; display: flex; gap: 0.5em; align-items: center;">
         <span>
@@ -115,15 +130,35 @@ const save = async () => {
 
         <div style="display: flex; gap: 0.5em;" v-if="showForm">
           <input type="text" v-model="rootPathFieldValue" style="padding: 0.2em 0.5em;" placeholder="Root path" :disabled="saveIsPending" />
-          <button @click="save()" :disabled="saveIsPending" class="sm">Save</button>
         </div>
       </div>
       
     </div>
 
+    <div class="form-field">
+      <label>Theme</label>
+      <select v-model="themeFieldValue" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
+        <option v-for="cssFile in availableThemes" :key="cssFile.id" :value="cssFile.id">{{ cssFile.name }}</option>
+      </select>
+      
+    </div>
+
+
     <div class="mutation-error text-80" v-if="saveIsError" style="margin-top: 0.5em;">
       Error saving the config: {{ saveError.shortMessage || saveError.message }}  <a @click.stop.prevent="saveReset()">Hide</a>
     </div>  
+
+    <div class="buttons">
+      <button @click="save()" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || saveIsPending">
+        <span v-if="saveIsPending">
+          <SaveIcon class="anim-pulse" />
+          Saving in progress...
+        </span>
+        <span v-else>
+          Save
+        </span>
+      </button>
+    </div>
 
   </div>
 </template>
@@ -142,6 +177,14 @@ label small {
   color: var(--color-text-muted);
 }
 
+.form-field {
+  margin-bottom: 0.5em;
+}
 
+.buttons {
+  display: flex;
+  gap: 1em;
+  justify-content: right;
+}
 
 </style>
