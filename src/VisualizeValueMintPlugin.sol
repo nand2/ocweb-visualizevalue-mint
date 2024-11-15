@@ -43,7 +43,7 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
         AdminPanel[] memory adminPanels = new AdminPanel[](1);
         adminPanels[0] = AdminPanel({
             title: "Visualize Value Mint",
-            url: "/admin/visualizevalue-mint/admin.umd.js",
+            url: "/plugins/visualizevalue-mint/admin.umd.js",
             moduleForGlobalAdminPanel: ocWebAdminPlugin,
             panelType: AdminPanelType.Secondary
         });
@@ -79,8 +79,8 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
     )
         external view override returns (uint statusCode, string memory body, KeyValue[] memory headers)
     {
-        // Serve the admin parts : /admin/visualizevalue-mint/* -> /admin/*
-        if(resource.length >= 2 && Strings.equal(resource[0], "admin") && Strings.equal(resource[1], "visualizevalue-mint")) {
+        // Serve the admin parts : /plugins/visualizevalue-mint/* -> /admin/*
+        if(resource.length >= 2 && Strings.equal(resource[0], "plugins") && Strings.equal(resource[1], "visualizevalue-mint")) {
             string[] memory newResource = new string[](resource.length - 1);
             newResource[0] = "admin";
             for(uint i = 2; i < resource.length; i++) {

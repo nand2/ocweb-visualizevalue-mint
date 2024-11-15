@@ -71,10 +71,15 @@ cd $ROOT_FOLDER/admin
 # Build the admin frontend
 npm run build
 
-# Go to the frontend folder
+# Go to the mint-base folder
 cd $ROOT_FOLDER/mint-base
-# Build the frontend
-# pnpm run generate
+# Build mint-base
+pnpm run generate
+
+# Go to the mint-zinc folder
+cd $ROOT_FOLDER/mint-zinc
+# Build mint-zinc
+pnpm run generate
 
 # Make a temporary folder where we mix both admin and frontend
 cd $ROOT_FOLDER
@@ -82,16 +87,24 @@ rm -Rf $ROOT_FOLDER/dist
 mkdir -p dist
 mkdir -p dist/admin
 mkdir -p dist/themes/base
+mkdir -p dist/themes/zinc
 cp -R admin/dist/* dist/admin
 cp -R mint-base/.output/public/* dist/themes/base
-# We inject the contents of assets/mint-index-patch.html into the index.html, just before the </body> tag
+cp -R mint-zinc/.output/public/* dist/themes/zinc
+# We inject the contents of assets/mint-index-patch.html into the base index.html, just before the </body> tag
 node -e "
   const fs = require('fs');
   const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8');
   fs.writeFileSync('$ROOT_FOLDER/dist/themes/base/index.html', fs.readFileSync('$ROOT_FOLDER/dist/themes/base/index.html', 'utf8').replace(/<\/body>/i, patch + '\n</body>'));
 "
+# We inject the contents of assets/mint-index-patch.html into the zinc index.html, just before the </body> tag
+node -e "
+  const fs = require('fs');
+  const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8');
+  fs.writeFileSync('$ROOT_FOLDER/dist/themes/zinc/index.html', fs.readFileSync('$ROOT_FOLDER/dist/themes/zinc/index.html', 'utf8').replace(/<\/body>/i, patch + '\n</body>'));
+"
 
-# Upload the admin frontend
+# Upload the whole package to the OCWebsite
 PRIVATE_KEY=$PRIVATE_KEY \
 WEB3_ADDRESS=web3://$OCWEBSITE_ADDRESS:$CHAIN_ID \
 npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /
