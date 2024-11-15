@@ -79,6 +79,14 @@ watch(fileContent, (newValue) => {
   }
 });
 
+// The list of available blockchains where VV Mint is deployed
+const availableVVMintBlockchains = [{
+  chainId: 1,
+  name: "Ethereum mainnet"
+}, {
+  chainId: 11155111,
+  name: "Sepolia (testnet)"
+}]
 
 
 
@@ -203,6 +211,12 @@ const executePreparedAddFilesTransactions = async () => {
 
     <div class="form-fields">
       <div>
+        <label>Blockchain</label>
+        <select v-model="config.chainId" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
+          <option v-for="availableVVMintBlockchain in availableVVMintBlockchains" :key="availableVVMintBlockchain.chainId" :value="availableVVMintBlockchain.chainId">{{ availableVVMintBlockchain.name }}</option>
+        </select>
+      </div>
+      <div>
         <label>Site title</label>
         <input v-model="config.title" placeholder="Your name" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
         <div class="text-danger text-80 error-message" v-if="showFormErrors && config.title == ''">
@@ -219,6 +233,9 @@ const executePreparedAddFilesTransactions = async () => {
       <div>
         <label>Creator ethereum address </label>
         <input v-model="config.creatorAddress" placeholder="0x123..0123 (Do not use ENS name)" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending" />
+        <div class="text-danger text-80 error-message" v-if="showFormErrors && config.creatorAddress == ''">
+          Required
+        </div>
       </div>
     </div>
 

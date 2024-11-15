@@ -1,0 +1,32 @@
+<script type="module">
+try {
+  const response = await fetch(".config/visualizevalue-mint/config.json");
+  if (!response.ok) {
+     throw new Error(`Error fetching file: Status: ${response.status}`);
+  }
+  const data = await response.json();
+  window.__NUXT__.config.public.title = data.title;
+  window.__NUXT__.config.public.description = data.subtitle;
+  window.__NUXT__.config.public.creatorAddress = data.creatorAddress;
+  // Based on blockchain choice, we set a few values
+  // Values taken from .env.example of the vv-mint repository
+  window.__NUXT__.config.public.chainId = data.chainId;
+  if(window.__NUXT__.config.public.chainId == 1) {
+    window.__NUXT__.config.public.factoryAddress = "0xd717Fe677072807057B03705227EC3E3b467b670";
+    window.__NUXT__.config.public.blockExplorer = "https://etherscan.io"
+    window.__NUXT__.config.public.rpc1 = "https://eth.llamarpc.com"
+    window.__NUXT__.config.public.rpc2 = "https://eth.drpc.org"
+    window.__NUXT__.config.public.rpc3 = "https://1rpc.io/eth"
+  }
+  else if(window.__NUXT__.config.public.chainId == 11155111) {
+    window.__NUXT__.config.public.factoryAddress = "0x750C5a6CFD40C9CaA48C31D87AC2a26101Acd517";
+    window.__NUXT__.config.public.blockExplorer = "https://sepolia.etherscan.io"
+    window.__NUXT__.config.public.rpc1 = "https://ethereum-sepolia-rpc.publicnode.com"
+    window.__NUXT__.config.public.rpc2 = "https://sepolia.drpc.org"
+    window.__NUXT__.config.public.rpc3 = "https://1rpc.io/sepolia"
+  }
+}
+catch (error) {
+  console.error("Failed loading vv-mint plugin config, using the default config. Error: ", error);
+}
+</script>

@@ -138,7 +138,7 @@ const save = async () => {
     <div class="form-field">
       <label>Theme</label>
       <select v-model="themeFieldValue" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
-        <option v-for="cssFile in availableThemes" :key="cssFile.id" :value="cssFile.id">{{ cssFile.name }}</option>
+        <option v-for="availableTheme in availableThemes" :key="availableTheme.id" :value="availableTheme.id">{{ availableTheme.name }}</option>
       </select>
       
     </div>

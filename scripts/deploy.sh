@@ -74,7 +74,7 @@ npm run build
 # Go to the frontend folder
 cd $ROOT_FOLDER/mint-base
 # Build the frontend
-pnpm run generate
+# pnpm run generate
 
 # Make a temporary folder where we mix both admin and frontend
 cd $ROOT_FOLDER
@@ -84,6 +84,12 @@ mkdir -p dist/admin
 mkdir -p dist/themes/base
 cp -R admin/dist/* dist/admin
 cp -R mint-base/.output/public/* dist/themes/base
+# We inject the contents of assets/mint-index-patch.html into the index.html, just before the </body> tag
+node -e "
+  const fs = require('fs');
+  const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8');
+  fs.writeFileSync('$ROOT_FOLDER/dist/themes/base/index.html', fs.readFileSync('$ROOT_FOLDER/dist/themes/base/index.html', 'utf8').replace(/<\/body>/i, patch + '\n</body>'));
+"
 
 # Upload the admin frontend
 PRIVATE_KEY=$PRIVATE_KEY \
