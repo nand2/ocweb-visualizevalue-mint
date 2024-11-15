@@ -115,7 +115,7 @@ const save = async () => {
 <template>
   <div class="admin">
 
-    <div class="form-field">
+    <!-- <div class="form-field">
       <label>Root path <small>Path where the app is served</small></label>
 
       <div style="font-size: 0.9em; display: flex; gap: 0.5em; align-items: center;">
@@ -133,7 +133,7 @@ const save = async () => {
         </div>
       </div>
       
-    </div>
+    </div> -->
 
     <div class="form-field">
       <label>Theme</label>
