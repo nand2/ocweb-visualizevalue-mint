@@ -71,47 +71,6 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
      * Internal redirects for the frontend serving
      */
     function rewriteWeb3Request(IVersionableWebsite website, uint websiteVersionIndex, string[] memory resource, KeyValue[] memory params) external view returns (bool rewritten, string[] memory newResource, KeyValue[] memory newParams) {
-
-        // Issue with OCWebsites version 1 : Internal redirect is requested for all plugins at once,
-        // instead of, for each plugin, do internal redirect and then try to serve.
-
-        // // The frontend serving is done by proxying /[config.rootPath]/* -> /themes/[config.theme]/*
-        // // Check if the requested resource is a 404. If yes, we make an internal redirect to the
-        // // /index.html page
-        // Config memory config = configs[website][websiteVersionIndex];
-        // if(resource.length >= config.rootPath.length) {
-        //     bool prefixMatch = true;
-        //     for(uint i = 0; i < config.rootPath.length; i++) {
-        //         if(Strings.equal(resource[i], config.rootPath[i]) == false) {
-        //             prefixMatch = false;
-        //             break;
-        //         }
-        //     }
-
-        //     if(prefixMatch) {
-        //         string[] memory mappedResource = new string[](resource.length - config.rootPath.length + 2);
-        //         mappedResource[0] = "themes";
-        //         mappedResource[1] = config.theme == Theme.Base ? "base" : "zinc";
-        //         for(uint i = config.rootPath.length; i < resource.length; i++) {
-        //             mappedResource[i - config.rootPath.length + 2] = resource[i];
-        //         }
-
-        //         uint statusCode;
-        //         string memory body;
-        //         KeyValue[] memory headers;
-        //         (statusCode, body, headers) = frontend.request(mappedResource, params);
-
-        //         // If the status code is 404, we will internally rewrite the request to /index.html
-        //         if(statusCode == 404) {
-        //             rewritten = true;
-        //             newResource = new string[](1);
-        //             newResource[0] = "index.html";
-        //             return (rewritten, newResource, newParams);
-        //         }
-        //     }
-        // }
-
-
         return (false, new string[](0), new KeyValue[](0));
     }
 
@@ -140,7 +99,7 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
             // the frontend website
             for(uint i = 0; i < headers.length; i++) {
                 if(LibStrings.compare(headers[i].key, "Cache-control") && LibStrings.compare(headers[i].value, "evm-events")) {
-                    string memory path = "";
+                    string memory path = "/";
                     for(uint j = 0; j < newResource.length; j++) {
                         path = string.concat(path, newResource[j]);
                         if(j < newResource.length - 1) {
@@ -175,6 +134,16 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
 
                 (statusCode, body, headers) = frontend.request(newResource, params);
 
+                // If the status code is 404, we will internally rewrite the request to /index.html
+                if(statusCode == 404) {
+                    newResource = new string[](3);
+                    newResource[0] = "themes";
+                    newResource[1] = config.theme == Theme.Base ? "base" : "zinc";
+                    newResource[2] = "index.html";
+
+                    (statusCode, body, headers) = frontend.request(newResource, params);
+                }
+
                 // ERC-7774
                 // If there is a "Cache-control: evm-events" header, we will replace it with 
                 // "Cache-control: evm-events=<addressOfFrontend><newResourcePath>"
@@ -182,7 +151,7 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
                 // the frontend website
                 for(uint i = 0; i < headers.length; i++) {
                     if(LibStrings.compare(headers[i].key, "Cache-control") && LibStrings.compare(headers[i].value, "evm-events")) {
-                        string memory path = "";
+                        string memory path = "/";
                         for(uint j = 0; j < newResource.length; j++) {
                             path = string.concat(path, newResource[j]);
                             if(j < newResource.length - 1) {
@@ -225,5 +194,10 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
 
         config.rootPath = _config.rootPath;
         config.theme = _config.theme;
+
+        // ERC-7774: Send an event to clear all cache
+        string[] memory pathsToClear = new string[](1);
+        pathsToClear[0] = "*";
+        website.clearPathCache(websiteVersionIndex, pathsToClear);
     }
 }
