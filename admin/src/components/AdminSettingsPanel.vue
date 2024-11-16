@@ -137,7 +137,7 @@ const save = async () => {
 
     <div class="form-field">
       <label>Theme</label>
-      <select v-model="themeFieldValue" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
+      <select v-model="themeFieldValue" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || saveIsPending">
         <option v-for="availableTheme in availableThemes" :key="availableTheme.id" :value="availableTheme.id">{{ availableTheme.name }}</option>
       </select>
       
@@ -151,7 +151,6 @@ const save = async () => {
     <div class="buttons">
       <button @click="save()" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || saveIsPending">
         <span v-if="saveIsPending">
-          <SaveIcon class="anim-pulse" />
           Saving in progress...
         </span>
         <span v-else>

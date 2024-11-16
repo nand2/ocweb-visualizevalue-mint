@@ -23,6 +23,107 @@ export const abi = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "owner",
+        type: "address"
+      }
+    ],
+    name: "OwnableInvalidOwner",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "account",
+        type: "address"
+      }
+    ],
+    name: "OwnableUnauthorizedAccount",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "length",
+        type: "uint256"
+      }
+    ],
+    name: "StringsInsufficientHexLength",
+    type: "error"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address"
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "OwnershipTransferStarted",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address"
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "OwnershipTransferred",
+    type: "event"
+  },
+  {
+    inputs: [],
+    name: "acceptOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string"
+      },
+      {
+        internalType: "contract IDecentralizedApp",
+        name: "fileServer",
+        type: "address"
+      }
+    ],
+    name: "addTheme",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
         internalType: "contract IVersionableWebsite",
         name: "website",
         type: "address"
@@ -79,12 +180,12 @@ export const abi = [
             type: "string[]"
           },
           {
-            internalType: "enum",
+            internalType: "contract IDecentralizedApp",
             name: "theme",
-            type: "uint8"
+            type: "address"
           }
         ],
-        internalType: "struct ThemeAboutMePlugin.Config",
+        internalType: "struct VisualizeValueMintPlugin.Config",
         name: "",
         type: "tuple"
       }
@@ -183,6 +284,32 @@ export const abi = [
     type: "function"
   },
   {
+    inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "pendingOwner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
     inputs: [
       {
         internalType: "contract IVersionableWebsite",
@@ -248,6 +375,13 @@ export const abi = [
       }
     ],
     stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function"
   },
   {
@@ -338,17 +472,42 @@ export const abi = [
             type: "string[]"
           },
           {
-            internalType: "enum",
+            internalType: "contract IDecentralizedApp",
             name: "theme",
-            type: "uint8"
+            type: "address"
           }
         ],
-        internalType: "struct ThemeAboutMePlugin.Config",
+        internalType: "struct VisualizeValueMintPlugin.Config",
         name: "_config",
         type: "tuple"
       }
     ],
     name: "setConfig",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "name",
+            type: "string"
+          },
+          {
+            internalType: "contract IDecentralizedApp",
+            name: "fileServer",
+            type: "address"
+          }
+        ],
+        internalType: "struct VisualizeValueMintPlugin.Theme[]",
+        name: "_themes",
+        type: "tuple[]"
+      }
+    ],
+    name: "setThemes",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -383,6 +542,65 @@ export const abi = [
       }
     ],
     stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    name: "themes",
+    outputs: [
+      {
+        internalType: "string",
+        name: "name",
+        type: "string"
+      },
+      {
+        internalType: "contract IDecentralizedApp",
+        name: "fileServer",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    name: "getThemes",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "name",
+            type: "string"
+          },
+          {
+            internalType: "contract IDecentralizedApp",
+            name: "fileServer",
+            type: "address"
+          }
+        ],
+        internalType: "struct VisualizeValueMintPlugin.Theme[]",
+        name: "",
+        type: "tuple[]"
+      }
+    ],
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function"
   }
 ];

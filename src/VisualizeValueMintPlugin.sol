@@ -3,27 +3,36 @@ pragma solidity ^0.8.13;
 
 import { ERC165 } from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
+import { Ownable2Step, Ownable } from "@openzeppelin/contracts/access/Ownable2Step.sol";
 
 import "ocweb/contracts/src/interfaces/IVersionableWebsite.sol";
 import "ocweb/contracts/src/interfaces/IDecentralizedApp.sol";
 import "./library/LibStrings.sol";
 
-contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
+contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin, Ownable2Step {
+    // Main frontend: where the admin JS/CSS are located, for the admin panel
     IDecentralizedApp public frontend;
+    // Addresses of plugin dependencies
     IVersionableWebsitePlugin public staticFrontendPlugin;
     IVersionableWebsitePlugin public ocWebAdminPlugin;
 
-    enum Theme {
-        Base,
-        Zinc
+    // List of available themes (managed by owner of the plugin)
+    struct Theme {
+        string name;
+        // The resourceRequest web3:// website serving the files of the theme
+        IDecentralizedApp fileServer;
     }
+    Theme[] public themes;
+
+    // Config of IVersionableWebsite (OCWebsite) / website version index
     struct Config {
         string[] rootPath;
-        Theme theme;
+        // The resourceRequest web3:// website serving the files of the theme
+        IDecentralizedApp theme;
     }
     mapping(IVersionableWebsite => mapping(uint => Config)) private configs;
 
-    constructor(IDecentralizedApp _frontend, IVersionableWebsitePlugin _staticFrontendPlugin, IVersionableWebsitePlugin _ocWebAdminPlugin) {
+    constructor(IDecentralizedApp _frontend, IVersionableWebsitePlugin _staticFrontendPlugin, IVersionableWebsitePlugin _ocWebAdminPlugin) Ownable(msg.sender) {
         frontend = _frontend;
         staticFrontendPlugin = _staticFrontendPlugin;
         ocWebAdminPlugin = _ocWebAdminPlugin;
@@ -57,10 +66,10 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
         return
             Infos({
                 name: "visualizeValueMint",
-                version: "0.1.0",
+                version: "0.1.1",
                 title: "Visualize Value Mint",
                 subTitle: "Mint is an open source internet protocol enabling the creation and collection of digital artifacts on the Ethereum Virtual Machine.",
-                author: "",
+                author: "Jalil",
                 homepage: "https://mint.vv.xyz/",
                 dependencies: dependencies,
                 adminPanels: adminPanels
@@ -74,6 +83,9 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
         return (false, new string[](0), new KeyValue[](0));
     }
 
+    /**
+     * Process the web3 request
+     */
     function processWeb3Request(
         IVersionableWebsite website,
         uint websiteVersionIndex,
@@ -113,7 +125,7 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
             return (statusCode, body, headers);
         }
 
-        // Serve the frontend : Proxy /[config.rootPath]/* -> /themes/[config.theme]/*
+        // Serve the frontend : Proxy /[config.rootPath]/* -> /* (at selected theme)
         Config memory config = configs[website][websiteVersionIndex];
         if(resource.length >= config.rootPath.length) {
             bool prefixMatch = true;
@@ -125,24 +137,28 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
             }
 
             if(prefixMatch) {
-                string[] memory newResource = new string[](resource.length - config.rootPath.length + 2);
-                newResource[0] = "themes";
-                newResource[1] = config.theme == Theme.Base ? "base" : "zinc";
+                string[] memory newResource = new string[](resource.length - config.rootPath.length);
                 for(uint i = config.rootPath.length; i < resource.length; i++) {
-                    newResource[i - config.rootPath.length + 2] = resource[i];
+                    newResource[i - config.rootPath.length] = resource[i];
                 }
 
-                (statusCode, body, headers) = frontend.request(newResource, params);
-
-                // If the status code is 404, we will internally rewrite the request to /index.html
-                if(statusCode == 404) {
-                    newResource = new string[](3);
-                    newResource[0] = "themes";
-                    newResource[1] = config.theme == Theme.Base ? "base" : "zinc";
-                    newResource[2] = "index.html";
-
-                    (statusCode, body, headers) = frontend.request(newResource, params);
+                // Determine which theme we are going to use : 
+                // 1. The theme set in the config
+                // 2. The first theme available
+                IDecentralizedApp theme;
+                if(config.theme != IDecentralizedApp(address(0))) {
+                    theme = config.theme;
+                } else if(themes.length > 0) {
+                    theme = themes[0].fileServer;
                 }
+
+                // If no theme was determined, return right away
+                if(theme == IDecentralizedApp(address(0))) {
+                    return (statusCode, body, headers);
+                }
+
+                // Fetch the resource from the theme
+                (statusCode, body, headers) = theme.request(newResource, params);
 
                 // ERC-7774
                 // If there is a "Cache-control: evm-events" header, we will replace it with 
@@ -199,5 +215,23 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin {
         string[] memory pathsToClear = new string[](1);
         pathsToClear[0] = "*";
         website.clearPathCache(websiteVersionIndex, pathsToClear);
+    }
+
+    function addTheme(string memory name, IDecentralizedApp fileServer) external onlyOwner {
+        themes.push(Theme({
+            name: name,
+            fileServer: fileServer
+        }));
+    }
+
+    function getThemes() external view returns (Theme[] memory) {
+        return themes;
+    }
+
+    function setThemes(Theme[] memory _themes) external onlyOwner {
+        delete themes;
+        for (uint i = 0; i < _themes.length; i++) {
+            themes.push(_themes[i]);
+        }
     }
 }

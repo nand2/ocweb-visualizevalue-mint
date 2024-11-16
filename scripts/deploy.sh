@@ -46,6 +46,12 @@ then
     exit
 fi
 
+# Non-hardhat chain: Ask for confirmation
+if [ "$CHAIN_ID" != "31337" ]; then
+  echo "Please confirm that you want to deploy on chain $CHAIN_ID"
+  read -p "Press enter to continue"
+fi
+
 # Compute the plugin root folder (which is the parent folder of this script)
 ROOT_FOLDER=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
 
@@ -56,14 +62,14 @@ ROOT_FOLDER=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
 
 exec 5>&1
 OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
-  npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID vv-mint | tee >(cat - >&5))"
+  npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID vvmint | tee >(cat - >&5))"
 
 # Get the address of the OCWebsite
 OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
 
 
 #
-# Build and upload the admin frontend and the main frontend
+# Build and upload the admin frontend
 #
 
 # Go to the admin frontend folder
@@ -71,38 +77,12 @@ cd $ROOT_FOLDER/admin
 # Build the admin frontend
 npm run build
 
-# Go to the mint-base folder
-cd $ROOT_FOLDER/mint-base
-# Build mint-base
-pnpm run generate
-
-# Go to the mint-zinc folder
-cd $ROOT_FOLDER/mint-zinc
-# Build mint-zinc
-pnpm run generate
-
-# Make a temporary folder where we mix both admin and frontend
+# Make a temporary folder where we prepare the upload
 cd $ROOT_FOLDER
 rm -Rf $ROOT_FOLDER/dist
 mkdir -p dist
 mkdir -p dist/admin
-mkdir -p dist/themes/base
-mkdir -p dist/themes/zinc
 cp -R admin/dist/* dist/admin
-cp -R mint-base/.output/public/* dist/themes/base
-cp -R mint-zinc/.output/public/* dist/themes/zinc
-# We inject the contents of assets/mint-index-patch.html into the base index.html, just before the </body> tag
-node -e "
-  const fs = require('fs');
-  const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8');
-  fs.writeFileSync('$ROOT_FOLDER/dist/themes/base/index.html', fs.readFileSync('$ROOT_FOLDER/dist/themes/base/index.html', 'utf8').replace(/<\/body>/i, patch + '\n</body>'));
-"
-# We inject the contents of assets/mint-index-patch.html into the zinc index.html, just before the </body> tag
-node -e "
-  const fs = require('fs');
-  const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8');
-  fs.writeFileSync('$ROOT_FOLDER/dist/themes/zinc/index.html', fs.readFileSync('$ROOT_FOLDER/dist/themes/zinc/index.html', 'utf8').replace(/<\/body>/i, patch + '\n</body>'));
-"
 
 # Upload the whole package to the OCWebsite
 PRIVATE_KEY=$PRIVATE_KEY \
@@ -118,9 +98,77 @@ FORGE_CREATE_OPTIONS=
 if [ "$CHAIN_ID" != "31337" ]; then
   FORGE_CREATE_OPTIONS="--verify"
 fi
-forge create --private-key $PRIVATE_KEY $FORGE_CREATE_OPTIONS \
+exec 5>&1
+OUTPUT="$(forge create --private-key $PRIVATE_KEY $FORGE_CREATE_OPTIONS \
 --constructor-args $OCWEBSITE_ADDRESS $STATIC_FRONTEND_PLUGIN_ADDRESS $OCWEB_ADMIN_PLUGIN_ADDRESS \
 --rpc-url $RPC_URL \
-src/VisualizeValueMintPlugin.sol:VisualizeValueMintPlugin
+src/VisualizeValueMintPlugin.sol:VisualizeValueMintPlugin | tee >(cat - >&5))"
+
+# Get the plugin address
+PLUGIN_ADDRESS=$(echo "$OUTPUT" | grep -oP 'Deployed to: \K0x\w+')
+echo "Plugin address: $PLUGIN_ADDRESS"
+
+
+
+#
+# Build and upload the themes
+#
+
+# Get all the folder names starting with mint-
+THEMES=$(ls -d $ROOT_FOLDER/mint-* | xargs -n1 basename)
+
+# For each theme: mint an OCWebsite, build the theme, upload it
+for THEME in $THEMES; do
+  exec 5>&1
+  OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
+    npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID vv$THEME | tee >(cat - >&5))"
+
+  # Get the address of the OCWebsite
+  THEME_OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
+
+  # Go to the theme folder
+  cd $ROOT_FOLDER/$THEME
+  # Build the theme
+  pnpm run generate
+
+  # Make a temporary folder where we prepare the upload
+  cd $ROOT_FOLDER
+  rm -Rf $ROOT_FOLDER/dist
+  mkdir -p dist
+  cp -R $THEME/.output/public/* dist
+  # We inject the contents of assets/mint-index-patch.html into the base index.html, just before the </body> tag
+  node -e "
+    const fs = require('fs');
+    const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8');
+    fs.writeFileSync('$ROOT_FOLDER/dist/index.html', fs.readFileSync('$ROOT_FOLDER/dist/index.html', 'utf8').replace(/<\/body>/i, patch + '\n</body>'));
+  "
+  
+  # Upload the theme to the OCWebsite
+  PRIVATE_KEY=$PRIVATE_KEY \
+  WEB3_ADDRESS=web3://$THEME_OCWEBSITE_ADDRESS:$CHAIN_ID \
+  npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /
+
+  # Prepare the human-readable name of the theme
+  THEME_NAME=$(echo $THEME | sed 's/^mint-//g')
+  # Mapping of names to human-readable names
+  case $THEME_NAME in
+    "base")
+      THEME_HUMAN_NAME="Base"
+      ;;
+    "zinc")
+      THEME_HUMAN_NAME="Zinc"
+      ;;
+    *)
+      echo "Unknown theme name: $THEME_NAME"
+      exit 1
+      ;;
+  esac
+
+  # Add the theme to the plugin
+  echo "Adding the theme to the plugin"
+  cast send $PLUGIN_ADDRESS "addTheme(string,address)" $THEME_HUMAN_NAME $THEME_OCWEBSITE_ADDRESS --private-key ${PRIVATE_KEY} --rpc-url ${RPC_URL}
+done
+
+
 
 
