@@ -569,6 +569,7 @@ export const abi = [
     type: "function"
   },
   {
+    inputs: [],
     name: "getThemes",
     outputs: [
       {
@@ -589,6 +590,8 @@ export const abi = [
         type: "tuple[]"
       }
     ],
+    stateMutability: "view",
+    type: "function"
   },
   {
     inputs: [

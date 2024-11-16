@@ -51,6 +51,17 @@ const visualizeValueMintPluginClient = computed(() => {
 // Get the lock status
 const { data: isLocked, isLoading: isLockedLoading, isFetching: isLockedFetching, isError: isLockedIsError, error: isLockedError, isSuccess: isLockedLoaded } = useIsLocked(props.contractAddress, props.chainId)
 
+// Get the available themes
+const { data: availableThemes, isLoading: availableThemesLoading, isFetching: availableThemesFetching, isError: availableThemesIsError, error: availableThemesError, isSuccess: availableThemesLoaded } = useQuery({
+  queryKey: ['PluginVVMintAvailableThemes', props.pluginInfos.plugin],
+  queryFn: async () => {
+    const result = await visualizeValueMintPluginClient.value.getThemes();
+    return result;
+  },
+  staleTime: 3600 * 1000,
+  enabled: computed(() => visualizeValueMintPluginClient.value != null),
+})
+
 // Get the config
 const { data: config, isLoading: configLoading, isFetching: configFetching, isError: configIsError, error: configError, isSuccess: configLoaded } = useQuery({
   queryKey: ['OCWebsiteVersionPluginConfig', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
@@ -58,7 +69,7 @@ const { data: config, isLoading: configLoading, isFetching: configFetching, isEr
     const result = await visualizeValueMintPluginClient.value.getConfig(props.websiteVersionIndex);
     return result;
   },
-  enabled: computed(() => visualizeValueMintPluginClient.value != null),
+  enabled: computed(() => visualizeValueMintPluginClient.value != null && availableThemesLoaded.value),
 })
 
 // Load the unserialized root path
@@ -68,19 +79,20 @@ watch(config, () => {
 })
 
 // Load the theme
-const themeFieldValue = ref(configLoaded.value ? config.value.theme : 0)
+const themeFieldValue = ref(
+  configLoaded.value ? 
+    (config.value.theme != "0x0000000000000000000000000000000000000000" ? 
+      config.value.theme : 
+      (availableThemesLoaded.value && availableThemes.value.length > 0 ? 
+        availableThemes.value[0].fileServer : 
+        null)) 
+    : null)
 watch(config, () => {
   themeFieldValue.value = config.value.theme
+  if(themeFieldValue.value == "0x0000000000000000000000000000000000000000" && availableThemesLoaded.value && availableThemes.value.length > 0) {
+    themeFieldValue.value = availableThemes.value[0].fileServer
+  }
 })
-
-// The list of available themes
-const availableThemes = [{
-  id: 0,
-  name: "Base"
-}, {
-  id: 1,
-  name: "Zinc"
-}]
 
 const showForm = ref(false)
 
@@ -115,7 +127,7 @@ const save = async () => {
 <template>
   <div class="admin">
 
-    <!-- <div class="form-field">
+    <div class="form-field">
       <label>Root path <small>Path where the app is served</small></label>
 
       <div style="font-size: 0.9em; display: flex; gap: 0.5em; align-items: center;">
@@ -133,12 +145,12 @@ const save = async () => {
         </div>
       </div>
       
-    </div> -->
+    </div>
 
     <div class="form-field">
       <label>Theme</label>
       <select v-model="themeFieldValue" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || saveIsPending">
-        <option v-for="availableTheme in availableThemes" :key="availableTheme.id" :value="availableTheme.id">{{ availableTheme.name }}</option>
+        <option v-for="availableTheme in availableThemes" :key="availableTheme.fileServer" :value="availableTheme.fileServer">{{ availableTheme.name }}</option>
       </select>
       
     </div>

@@ -206,6 +206,17 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin, Ownable2
         IVersionableWebsite.WebsiteVersion memory websiteVersion = website.getWebsiteVersion(websiteVersionIndex);
         require(websiteVersion.locked == false, "Website version is locked");
 
+        // Ensure _config.theme is one of the themes, or zero address
+        bool themeFound = false;
+        for (uint i = 0; i < themes.length; i++) {
+            if (themes[i].fileServer == _config.theme) {
+                themeFound = true;
+                break;
+            }
+        }
+        require(themeFound || _config.theme == IDecentralizedApp(address(0)), "Theme not found");
+
+
         Config storage config = configs[website][websiteVersionIndex];
 
         config.rootPath = _config.rootPath;

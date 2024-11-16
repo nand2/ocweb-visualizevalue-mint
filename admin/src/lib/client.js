@@ -25,6 +25,10 @@ class VisualizeValueMintPluginClient {
     return await this.#viemPluginContract.read.getConfig([this.#websiteContractAddress, frontendIndex])
   }
 
+  async getThemes() {
+    return await this.#viemPluginContract.read.getThemes([])
+  }
+
   async prepareSetConfigTransaction(frontendIndex, config) {
     return {
       functionName: 'setConfig',
