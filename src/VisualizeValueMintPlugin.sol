@@ -49,25 +49,31 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin, Ownable2
         dependencies[0] = staticFrontendPlugin;
         dependencies[1] = ocWebAdminPlugin;
 
-        AdminPanel[] memory adminPanels = new AdminPanel[](1);
+        AdminPanel[] memory adminPanels = new AdminPanel[](3);
         adminPanels[0] = AdminPanel({
-            title: "Visualize Value Mint",
+            title: "VV Mint",
+            url: "/plugins/visualizevalue-mint/admin.umd.js",
+            moduleForGlobalAdminPanel: ocWebAdminPlugin,
+            panelType: AdminPanelType.Primary
+        });
+        adminPanels[1] = AdminPanel({
+            title: "Settings",
             url: "/plugins/visualizevalue-mint/admin.umd.js",
             moduleForGlobalAdminPanel: ocWebAdminPlugin,
             panelType: AdminPanelType.Secondary
         });
-        // adminPanels[1] = AdminPanel({
-        //     title: "Theme About Me",
-        //     url: "/themes/about-me/admin.umd.js",
-        //     moduleForGlobalAdminPanel: ocWebAdminPlugin,
-        //     panelType: AdminPanelType.Secondary
-        // });
+        adminPanels[2] = AdminPanel({
+            title: "Settings 2",
+            url: "/plugins/visualizevalue-mint/admin.umd.js",
+            moduleForGlobalAdminPanel: ocWebAdminPlugin,
+            panelType: AdminPanelType.Secondary
+        });
 
         return
             Infos({
                 name: "visualizeValueMint",
                 version: "0.1.1",
-                title: "Visualize Value Mint",
+                title: "VV Mint Artist Platform",
                 subTitle: "Mint is an open source internet protocol enabling the creation and collection of digital artifacts on the Ethereum Virtual Machine.",
                 author: "Jalil",
                 homepage: "https://mint.vv.xyz/",

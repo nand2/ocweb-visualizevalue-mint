@@ -9,7 +9,6 @@ import PlusLgIcon from './Icons/PlusLgIcon.vue';
 import TrashIcon from './Icons/TrashIcon.vue';
 import SaveIcon from './Icons/SaveIcon.vue';
 import { defaultConfig } from '../assets/defaultConfig';
-import AdminSettingsPanel from './AdminSettingsPanel.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -82,10 +81,12 @@ watch(fileContent, (newValue) => {
 // The list of available blockchains where VV Mint is deployed
 const availableVVMintBlockchains = [{
   chainId: 1,
-  name: "Ethereum mainnet"
+  name: "Ethereum mainnet",
+  factory: "0xd717Fe677072807057B03705227EC3E3b467b670",
 }, {
   chainId: 11155111,
-  name: "Sepolia (testnet)"
+  name: "Sepolia (testnet)",
+  factory: "0x750C5a6CFD40C9CaA48C31D87AC2a26101Acd517",
 }]
 
 
@@ -195,19 +196,6 @@ const executePreparedAddFilesTransactions = async () => {
 
 <template>
   <div class="admin">
-    <div style="margin-bottom: 1em;">
-      <!-- Previously, settings were separated into 2 differents panels -->
-      <AdminSettingsPanel
-        :contractAddress
-        :chainId
-        :websiteVersion
-        :websiteVersionIndex
-        :websiteClient
-        :pluginsInfos
-        :pluginInfos />
-    </div>
-
-    <hr style="margin-bottom: 1em; border-color: var(--color-divider-secondary);" />
 
     <div class="form-fields">
       <div>

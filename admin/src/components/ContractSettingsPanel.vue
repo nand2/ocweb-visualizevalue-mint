@@ -7,7 +7,7 @@ import { useIsLocked } from 'ocweb/src/tanstack-vue.js';
 import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from 'ocweb/src/plugins/staticFrontend/tanstack-vue.js';
 
 import PencilSquareIcon from './Icons/PencilSquareIcon.vue';
-import { defaultConfig } from '../assets/defaultConfig';
+import { defaultConfig } from '../assets/defaultConfig.js';
 import { VisualizeValueMintPluginClient } from '../lib/client.js';
 
 const props = defineProps({
