@@ -57,6 +57,17 @@ ROOT_FOLDER=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
 
 
 #
+# Local deployment: deploy the VV Mint factory
+#
+
+if [ "$CHAIN_ID" == "31337" ]; then
+  echo "Deploying the VV Mint factory"
+  exec 5>&1
+  OUTPUT="$(forge script DeployVVMintScript --broadcast --private-key $PRIVATE_KEY --rpc-url $RPC_URL | tee >(cat - >&5))"
+fi
+
+
+#
 # Create an OCWebsite
 #
 
@@ -116,6 +127,8 @@ echo "Plugin address: $PLUGIN_ADDRESS"
 
 # Get all the folder names starting with mint-
 THEMES=$(ls -d $ROOT_FOLDER/mint-* | xargs -n1 basename)
+# Dev
+THEMES="mint-base"
 
 # For each theme: mint an OCWebsite, build the theme, upload it
 for THEME in $THEMES; do
