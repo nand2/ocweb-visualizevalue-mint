@@ -18,10 +18,11 @@ The whole thing is made of several components :
 
 ## Setup
 
-These instructions are approximate, they will be improved later:
-
-- Have the [OCWeb](https://github.com/nand2/ocweb) project locally installed.
-- Clone this project, so that the `ocweb` and `ocweb-visualizevalue-mint` are in the same folder.
-- Enter the `ocweb-visualizevalue-mint` folder, run `npm ci`
-- Go to each `mint-*` folder, run `pnpm install`
-- In `ocweb`, run the `./scripts/deploy.sh` script (which will deploy locally on an forge anvil node)
+- Install the [OCWeb](https://github.com/nand2/ocweb) repository, and deploy it locally (cf the `Installation` and `Local deployment` sections)
+- Clone this repository at the same level as the `ocweb` folder (the `ocweb-visualizevalue-mint` and `ocweb` folders are in the same folder)
+- In the `ocweb` folder, edit `.env`, and set :
+  ```
+  OCWEB_PLUGINS_BUILD="ocweb-visualizevalue-mint:true:true"
+  ```
+  This indicates that `ocweb-visualizevalue-mint` needs to be built, and that it will part of the OCWebsite factory plugin library (`true`), and that it will be installed by default when minting a new OCWebsite (`true`)
+- Rerun `./scripts/deploy.sh` in the `ocweb` folder : the plugin will be built, and the `example` OCWebsite will be minted with the plugin installed.
