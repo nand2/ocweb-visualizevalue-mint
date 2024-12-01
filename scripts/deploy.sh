@@ -71,12 +71,26 @@ fi
 # Create an OCWebsite
 #
 
-exec 5>&1
-OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
-  npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID vvmint | tee >(cat - >&5))"
+# If we are in local/testnet mode, if the OCWebsite was already minted, we reuse the OCWebsite
+OCWEBSITE_ADDRESS=
+if [ "$CHAIN_ID" == "31337" ] || [ "$CHAIN_ID" == "17000" ]; then
+  exec 5>&1
+  OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
+    npx ocweb --rpc $RPC_URL list --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID | tee >(cat - >&5))"
 
-# Get the address of the OCWebsite
-OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
+  # Get the address of the OCWebsite. Format is : "<ethereum-address> (token <number> subdomain vvmint)"
+  OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep "subdomain vvmint)" | grep -oP '0x\w+')
+fi
+
+# If the OCWebsite was not minted, we mint it
+if [ -z "$OCWEBSITE_ADDRESS" ]; then
+  exec 5>&1
+  OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
+    npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID vvmint | tee >(cat - >&5))"
+
+  # Get the address of the OCWebsite
+  OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
+fi
 
 
 #
@@ -98,7 +112,7 @@ cp -R admin/dist/* dist/admin
 # Upload the whole package to the OCWebsite
 PRIVATE_KEY=$PRIVATE_KEY \
 WEB3_ADDRESS=web3://$OCWEBSITE_ADDRESS:$CHAIN_ID \
-npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /
+npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* / --sync
 
 
 #
@@ -132,12 +146,26 @@ THEMES="mint-base"
 
 # For each theme: mint an OCWebsite, build the theme, upload it
 for THEME in $THEMES; do
-  exec 5>&1
-  OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
-    npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID vv$THEME | tee >(cat - >&5))"
+  # If we are in local/testnet mode, if the OCWebsite was already minted, we reuse the OCWebsite
+  THEME_OCWEBSITE_ADDRESS=
+  if [ "$CHAIN_ID" == "31337" ] || [ "$CHAIN_ID" == "17000" ]; then
+    exec 5>&1
+    OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
+      npx ocweb --rpc $RPC_URL list --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID | tee >(cat - >&5))"
 
-  # Get the address of the OCWebsite
-  THEME_OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
+    # Get the address of the OCWebsite. Format is : "<ethereum-address> (token <number> subdomain vvmint)"
+    THEME_OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep "subdomain vv$THEME)" | grep -oP '0x\w+')
+  fi
+
+  # If the OCWebsite was not minted, we mint it
+  if [ -z "$THEME_OCWEBSITE_ADDRESS" ]; then
+    exec 5>&1
+    OUTPUT="$(PRIVATE_KEY=$PRIVATE_KEY \
+      npx ocweb --rpc $RPC_URL --skip-tx-validation mint --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID vv$THEME | tee >(cat - >&5))"
+
+    # Get the address of the OCWebsite
+    THEME_OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep -oP 'New OCWebsite smart contract: \K0x\w+')
+  fi
 
   # Go to the theme folder
   cd $ROOT_FOLDER/$THEME
@@ -159,7 +187,7 @@ for THEME in $THEMES; do
   # Upload the theme to the OCWebsite
   PRIVATE_KEY=$PRIVATE_KEY \
   WEB3_ADDRESS=web3://$THEME_OCWEBSITE_ADDRESS:$CHAIN_ID \
-  npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /
+  npx ocweb --rpc $RPC_URL --skip-tx-validation upload dist/* /  --sync
 
   # Prepare the human-readable name of the theme
   THEME_NAME=$(echo $THEME | sed 's/^mint-//g')
