@@ -11,6 +11,7 @@ import TrashIcon from './Icons/TrashIcon.vue';
 import SaveIcon from './Icons/SaveIcon.vue';
 import { defaultConfig } from '../assets/defaultConfig';
 import { VVMintFactoryClient } from '../lib/vvmint-factory/client.js';
+import CollectionCreationForm from './collection/CollectionCreationForm.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -126,57 +127,66 @@ const { data: collections, isLoading: collectionsLoading, isFetching: collection
   enabled: computed(() => vvMintFactoryClient.value != null && config.value.creatorAddress != null),
 })
 
+// Do we show the collection creation form?
+const showCollectionCreationForm = ref(false)
+
 </script>
 
 <template>
   <div>
-   
-    <div v-if="staticFrontendLoaded && configFileInfos == null" class="not-configured">
-      The <strong>VV Mint Artist Platform</strong> plugin has not yet been configured and is the default creator address. <br /> Please go to the plugins tab to configure it with your own address.
-    </div>
-
-    <div v-else-if="staticFrontendLoaded">
-
-      <div class="collections">
-        <h3>My collections</h3>
-        {{ collectionsError }}{{ collections }}
-      </div>
-
-      <div class="create-collection-form">
-
-        <div v-if="hasFormErrors && showFormErrors" class="text-danger text-90">
-          Please fix the errors in the form
-        </div>
-
-        <div v-if="prepareAddFilesIsError" class="mutation-error">
-          <span>
-            Error preparing the transaction to save the config: {{ prepareAddFilesError.shortMessage || prepareAddFilesError.message }} <a @click.stop.prevent="prepareAddFilesReset()">Hide</a>
-          </span>
-        </div>
-
-        <div v-if="addFilesIsError" class="mutation-error">
-          <span>
-            Error saving the config: {{ addFilesError.shortMessage || addFilesError.message }} <a @click.stop.prevent="addFilesReset()">Hide</a>
-          </span>
-        </div>
-
-        <div class="buttons">
-          <button @click="prepareAddFilesTransactions" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
-            <span v-if="prepareAddFilesIsPending || addFilesIsPending">
-              <SaveIcon class="anim-pulse" />
-              Saving in progress...
-            </span>
-            <span v-else>
-              Save
-            </span>
-          </button>
-        </div>
-
-      </div>
-
-    </div>
-
     
+    <div class="collection-index" v-if="showCollectionCreationForm == false">
+   
+      <div v-if="staticFrontendLoaded && configFileInfos == null" class="not-configured">
+        The <strong>VV Mint Artist Platform</strong> plugin has not yet been configured and is the default creator address. <br /> Please go to the plugins tab to configure it with your own address.
+      </div>
+
+      <div v-else-if="staticFrontendLoaded">
+
+        <div class="collections">
+          <h3>My collections</h3>
+
+          <div v-if="collectionsLoading">
+            Loading collections...
+          </div>
+
+          <div v-else-if="collectionsIsError" class="text-danger">
+            Failed to load collections: {{ collectionsError }}
+          </div>
+
+          <div v-else-if="collectionsLoaded && collections.length == 0">
+            You have no collections yet.
+          </div>
+
+          <div v-else-if="collectionsLoaded && collections.length > 0">
+            {{ collections }}
+          </div>
+        </div>
+
+        <div class="operations">
+          <div class="op-add-new-collection" v-if="vvMintFactoryClient">
+            <div class="button-area">
+              <span class="button-text" @click="showCollectionCreationForm = true;">
+                <PlusLgIcon /> Add new collection
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div v-else-if="showCollectionCreationForm" class="collection-creation-form">    
+      <CollectionCreationForm
+        :chainId
+        :creatorAddress="config.creatorAddress"
+        :vvMintchainId="config.chainId"
+        :pluginInfos
+        :vvMintFactoryClient
+        @form-cancelled="showCollectionCreationForm = false;"
+        @form-executed="showCollectionCreationForm = false;"
+        />
+    </div>
 
   </div>
 </template>
