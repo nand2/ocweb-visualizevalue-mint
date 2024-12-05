@@ -29,8 +29,7 @@ class VVMintFactoryClient {
     // Trim them as well
     name = name.replace(/"/g, '\\"').trim()
     symbol = symbol.replace(/"/g, '\\"').trim()
-    // Description require line returns to be escaped, or it breaks the smartcontract JSON rendering
-    description = description.replace(/"/g, '\\"').trim().replace(/\n/g, '\n')
+    description = description.replace(/"/g, '\\"').trim()
 
     const imageDataChunks = []
     if(imageBinaryData) {

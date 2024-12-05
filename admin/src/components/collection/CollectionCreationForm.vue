@@ -133,7 +133,7 @@ const executePreparedcreateCollectionTransactions = async () => {
     <div style="margin-bottom: 1em; display: grid; gap: 1em; grid-template-columns: 1fr 1fr;">
       <div>
         <label>Description <small>Optional</small></label>
-        <textarea v-model="description" placeholder="" rows="5"></textarea>
+        <input type="text" v-model="description" placeholder="" />
       </div>
       <div>
         <label>Image <small>Optional</small></label>

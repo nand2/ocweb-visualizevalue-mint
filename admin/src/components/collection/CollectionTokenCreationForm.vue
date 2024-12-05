@@ -167,7 +167,7 @@ const executePreparedcreateCollectionTokenTransactions = async () => {
     <div style="margin-bottom: 1em; display: grid; gap: 1em; grid-template-columns: 2fr 1fr;">
       <div>
         <label>Description</label>
-        <textarea v-model="description" placeholder="" rows="5"></textarea>
+        <input type="text" v-model="description" placeholder="" rows="5" />
       </div>
     </div>
 
