@@ -12,6 +12,8 @@ import SaveIcon from './Icons/SaveIcon.vue';
 import { defaultConfig } from '../assets/defaultConfig';
 import { VVMintFactoryClient } from '../lib/vvmint-factory/client.js';
 import CollectionCreationForm from './collection/CollectionCreationForm.vue';
+import CollectionTokenCreationForm from './collection/CollectionTokenCreationForm.vue';
+import Collection from './collection/Collection.vue';
 
 const props = defineProps({
   contractAddress: {
@@ -118,7 +120,7 @@ const { data: collections, isLoading: collectionsLoading, isFetching: collection
       throw new Error('Network response was not ok')
     }
     const decodedResponse = await response.json()
-    console.log(decodedResponse)
+    // console.log(decodedResponse)
     const result = decodedResponse[0];
 
     return result;
@@ -129,13 +131,16 @@ const { data: collections, isLoading: collectionsLoading, isFetching: collection
 
 // Do we show the collection creation form?
 const showCollectionCreationForm = ref(false)
+// Do we show the collection token creation form?
+const showCollectionTokenCreationForm = ref(false)
+const collectionOfCollectionTokenCreationForm = ref(null)
 
 </script>
 
 <template>
   <div>
     
-    <div class="collection-index" v-if="showCollectionCreationForm == false">
+    <div class="collection-index" v-if="showCollectionCreationForm == false && showCollectionTokenCreationForm == false">
    
       <div v-if="staticFrontendLoaded && configFileInfos == null" class="not-configured">
         The <strong>VV Mint Artist Platform</strong> plugin has not yet been configured and is the default creator address. <br /> Please go to the plugins tab to configure it with your own address.
@@ -159,19 +164,33 @@ const showCollectionCreationForm = ref(false)
           </div>
 
           <div v-else-if="collectionsLoaded && collections.length > 0">
-            {{ collections }}
+            <div
+              v-for="collection in collections"
+              :key="collection"
+              class="collection"
+              >
+              <Collection
+                :chainId
+                :vvMintchainId="config.chainId"
+                :collectionAddress="collection"
+                :vvMintFactoryClient
+                @show-collection-token-creation-form="showCollectionTokenCreationForm = true; collectionOfCollectionTokenCreationForm = collection;"
+                />
+            </div>
           </div>
-        </div>
 
-        <div class="operations">
-          <div class="op-add-new-collection" v-if="vvMintFactoryClient">
-            <div class="button-area">
-              <span class="button-text" @click="showCollectionCreationForm = true;">
-                <PlusLgIcon /> Add new collection
-              </span>
+          <div class="operations">
+            <div class="op-add-new-collection" v-if="vvMintFactoryClient">
+              <div class="button-area">
+                <span class="button-text" @click="showCollectionCreationForm = true;">
+                  <PlusLgIcon /> Add new collection
+                </span>
+              </div>
             </div>
           </div>
         </div>
+
+
 
       </div>
     </div>
@@ -179,14 +198,25 @@ const showCollectionCreationForm = ref(false)
     <div v-else-if="showCollectionCreationForm" class="collection-creation-form">    
       <CollectionCreationForm
         :chainId
-        :creatorAddress="config.creatorAddress"
         :vvMintchainId="config.chainId"
+        :creatorAddress="config.creatorAddress"
         :pluginInfos
         :vvMintFactoryClient
         @form-cancelled="showCollectionCreationForm = false;"
         @form-executed="showCollectionCreationForm = false;"
         />
     </div>
+
+    <div v-else-if="showCollectionTokenCreationForm" class="collection-token-creation-form">
+      <CollectionTokenCreationForm
+        :chainId
+        :vvMintchainId="config.chainId"
+        :collectionAddress="collectionOfCollectionTokenCreationForm"
+        :pluginInfos
+        @form-cancelled="showCollectionTokenCreationForm = false;"
+        @form-executed="showCollectionTokenCreationForm = false;"
+        />
+      </div>
 
   </div>
 </template>
@@ -198,5 +228,19 @@ const showCollectionCreationForm = ref(false)
   text-align: center;
 }
 
+.collections {
+  margin: 1em;
+}
+
+.collection {
+  margin: 1em 0;
+  padding-bottom: 1em;
+  border-bottom: 1px solid var(--color-divider-secondary);
+}
+
+.collection:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
 
 </style>

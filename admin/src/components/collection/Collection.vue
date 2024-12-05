@@ -1,0 +1,163 @@
+<script setup>
+import { ref, onMounted, computed, watch } from 'vue'
+import { useQuery, useQueryClient, useMutation } from '@tanstack/vue-query'
+import { useConnectorClient, useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt } from '@wagmi/vue';
+
+import { VVMintCollectionV1Client } from '../../lib/vvmint-collection-v1/client.js';
+import PlusLgIcon from '../Icons/PlusLgIcon.vue';
+import CollectionToken from './CollectionToken.vue';
+
+
+const emit = defineEmits(['showCollectionTokenCreationForm'])
+
+const props = defineProps({
+  chainId: {
+    type: Number,
+    required: true,
+  },
+  collectionAddress: {
+    type: String,
+    required: true,
+  },
+  vvMintchainId: {
+    type: Number,
+    required: true,
+  },
+  vvMintFactoryClient: {
+    type: Object,
+    required: true,
+  },
+})
+
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+
+
+// Fetch infos about the collection
+const { data: collectionInfos, isLoading: collectionInfosLoading, isFetching: collectionInfosFetching, isError: collectionInfosIsError, error: collectionInfosError, isSuccess: collectionInfosLoaded } = useQuery({
+  queryKey: ['CollectionInfos', props.collectionAddress, props.vvMintchainId],
+  queryFn: async () => {
+    const response = await fetch(`web3://${props.collectionAddress}:${props.vvMintchainId}/contractURI?returns=(string)`)
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
+    }
+    const decodedResponse = await response.json()
+    // console.log(decodedResponse[0])
+    const contractURI = decodedResponse[0];
+    
+    // ContractURI is a JSON data URL. Decode it.
+    const contractURIData = await fetch(contractURI)
+    if (!contractURIData.ok) {
+      throw new Error('Data URL decoding was not ok')
+    }
+    const result = await contractURIData.json()
+    // console.log(result)
+
+    return result;
+  },
+  staleTime: 3600 * 1000,
+})
+
+// Get the latest token id
+const { data: latestTokenId, isLoading: latestTokenIdLoading, isFetching: latestTokenIdFetching, isError: latestTokenIdIsError, error: latestTokenIdError, isSuccess: latestTokenIdLoaded } = useQuery({
+  queryKey: ['CollectionLatestTokenId', props.collectionAddress, props.vvMintchainId],
+  queryFn: async () => {
+    const response = await fetch(`web3://${props.collectionAddress}:${props.vvMintchainId}/latestTokenId?returns=(uint256)`)
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
+    }
+    const decodedResponse = await response.json()
+    // console.log(decodedResponse[0])
+    return decodedResponse[0];
+  },
+  staleTime: 3600 * 1000,
+})
+
+
+// Prepare the VVMint collection client
+const vvMintCollectionClient = computed(() => {
+  return viemClientLoaded.value ? new VVMintCollectionV1Client(viemClient.value, props.collectionAddress) : null;
+})
+
+
+
+</script>
+
+<template>
+  <div v-if="collectionInfosLoading">
+    Loading collection infos...
+  </div>
+  <div v-else-if="collectionInfosIsError" class="text-danger">
+    Failed to load collection infos: {{ collectionInfosError }}
+  </div>
+  <div v-else-if="collectionInfosLoaded" class="collection-entry">
+    <div class="collection-line">
+      <img v-if="collectionInfos.image" :src="collectionInfos.image" />    
+      <div>
+        <div class="title">
+          {{ collectionInfos.name }}
+        </div>
+        <div>
+          {{ collectionInfos.description }}
+        </div>
+      </div>
+    </div>
+
+    <div class="collection-body">
+      <div v-if="latestTokenIdLoaded" class="token-list">
+        <CollectionToken 
+          v-for="tokenId in Array.from({length: latestTokenId}).map((_, i) => i + 1)"
+          :key="tokenId"
+          :chainId="chainId"
+          :collectionAddress="collectionAddress"
+          :vvMintchainId="vvMintchainId"
+          :vvMintCollectionClient="vvMintCollectionClient"
+          :tokenId="tokenId"
+          />
+      </div>
+
+      <div class="operations">
+        <div class="op-add-new-collection" v-if="vvMintFactoryClient">
+          <div class="button-area">
+            <span class="button-text" @click="$emit('showCollectionTokenCreationForm')">
+              <PlusLgIcon /> Add new token
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+
+  </div>
+</template>
+
+<style scoped>
+.collection-line {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  font-size: 0.9em;
+}
+
+.collection-line img {
+  max-width: 100px;
+  max-height: 100px;
+}
+
+.collection-line .title {
+  font-weight: bold;
+}
+
+.collection-body {
+  margin: 1em 0em 0em 2em;
+}
+
+.token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.operations {
+  font-size: 0.8em;
+}
+</style>

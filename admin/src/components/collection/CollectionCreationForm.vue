@@ -99,10 +99,6 @@ const { isPending: createCollectionIsPending, isError: createCollectionIsError, 
     // Emit the event when the transaction is done
     emit('formExecuted')
   },
-  onError: (error) => {
-    // Mark the transaction as failed
-    addFileTransactionResults.value[addFileTransactionBeingExecutedIndex.value] = {status: 'error', error}
-  }
 })
 const executePreparedcreateCollectionTransactions = async () => {
     createCollectionMutate()
@@ -147,7 +143,7 @@ const executePreparedcreateCollectionTransactions = async () => {
 
     <div v-if="createCollectionIsError" class="mutation-error">
       <span>
-        Error creation the collection: {{ createCollectionError.shortMessage || createCollectionError.message }} <a @click.stop.prevent="createCollectionReset()">Hide</a>
+        Error creating the collection: {{ createCollectionError.shortMessage || createCollectionError.message }} <a @click.stop.prevent="createCollectionReset()">Hide</a>
       </span>
     </div>
 

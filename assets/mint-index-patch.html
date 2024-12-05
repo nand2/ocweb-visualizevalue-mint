@@ -25,6 +25,16 @@ try {
     window.__NUXT__.config.public.rpc2 = "https://sepolia.drpc.org"
     window.__NUXT__.config.public.rpc3 = "https://1rpc.io/sepolia"
   }
+  else if(window.__NUXT__.config.public.chainId == 31337) {
+    window.__NUXT__.config.public.factoryAddress = "0x870526b7973b56163a6997bB7C886F5E4EA53638";
+    window.__NUXT__.config.public.blockExplorer = ""
+    window.__NUXT__.config.public.rpc1 = "http://127.0.0.1:8545"
+    window.__NUXT__.config.public.rpc2 = "http://127.0.0.1:8545"
+    window.__NUXT__.config.public.rpc3 = "http://127.0.0.1:8545"
+  }
+  else {
+    console.error("Unknown chainId: ", window.__NUXT__.config.public.chainId);
+  }
 }
 catch (error) {
   console.error("Failed loading vv-mint plugin config, using the default config. Error: ", error);
