@@ -83,10 +83,10 @@ const vvMintCollectionClient = computed(() => {
 </script>
 
 <template>
-  <div v-if="collectionInfosLoading">
+  <div v-if="collectionInfosLoading" class="text-90">
     Loading collection infos...
   </div>
-  <div v-else-if="collectionInfosIsError" class="text-danger">
+  <div v-else-if="collectionInfosIsError" class="text-danger text-90">
     Failed to load collection infos: {{ collectionInfosError }}
   </div>
   <div v-else-if="collectionInfosLoaded" class="collection-entry">
@@ -96,14 +96,14 @@ const vvMintCollectionClient = computed(() => {
         <div class="title">
           {{ collectionInfos.name }}
         </div>
-        <div>
+        <div style="white-space: pre-line;">
           {{ collectionInfos.description }}
         </div>
       </div>
     </div>
 
     <div class="collection-body">
-      <div v-if="latestTokenIdLoaded" class="token-list">
+      <div v-if="latestTokenIdLoaded && latestTokenId > 0" class="token-list">
         <CollectionToken 
           v-for="tokenId in Array.from({length: latestTokenId}).map((_, i) => i + 1)"
           :key="tokenId"
@@ -113,6 +113,9 @@ const vvMintCollectionClient = computed(() => {
           :vvMintCollectionClient="vvMintCollectionClient"
           :tokenId="tokenId"
           />
+      </div>
+      <div v-else-if="latestTokenIdLoaded && latestTokenId == 0" class="text-muted text-90">
+        No token in this collection yet.
       </div>
 
       <div class="operations">

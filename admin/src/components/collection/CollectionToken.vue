@@ -55,6 +55,7 @@ const { data: tokenInfos, isLoading: tokenInfosLoading, isFetching: tokenInfosFe
       data: Number(resultArray[6]),
     };
     
+    
     // Load the token URI
     const uriResponse = await fetch(`web3://${props.collectionAddress}:${props.vvMintchainId}/uri/${props.tokenId}?returns=(string)`)
     if (!uriResponse.ok) {
@@ -79,8 +80,21 @@ const { data: tokenInfos, isLoading: tokenInfosLoading, isFetching: tokenInfosFe
   staleTime: 3600 * 1000,
 })
 
-
-
+// Determine if the token is mintable
+const isMintable = computed(() => {
+  return tokenInfosLoaded.value && tokenInfos.value.closedAt > Date.now() / 1000;
+})
+// If mintable, determine how much time is left (in XX hours XX minutes format)
+const timeLeft = computed(() => {
+  if (isMintable.value) {
+    const timeLeft = tokenInfos.value.closedAt - Date.now() / 1000;
+    const hours = Math.floor(timeLeft / 3600);
+    const minutes = Math.floor((timeLeft % 3600) / 60);
+    return `${hours} hours ${minutes} minutes`;
+  } else {
+    return null;
+  }
+})
 
 
 </script>
@@ -102,6 +116,12 @@ const { data: tokenInfos, isLoading: tokenInfosLoading, isFetching: tokenInfosFe
         </div>
         <div>
           {{ tokenInfos.tokenURI.description }}
+        </div>
+        <div v-if="isMintable">
+          Mintable, closes in in {{ timeLeft }}
+        </div>
+        <div v-else>
+          Minting closed
         </div>
       </div>
     </div>

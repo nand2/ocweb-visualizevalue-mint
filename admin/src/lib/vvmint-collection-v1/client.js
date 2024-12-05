@@ -32,7 +32,8 @@ class VVMintCollectionV1Client {
     // (The smart contract does not escape them when generating the JSON)
     // Trim them as well
     name = name.replace(/"/g, '\\"').trim()
-    description = description.replace(/"/g, '\\"').trim()
+    // Description require line returns to be escaped, or it breaks the smartcontract JSON rendering
+    description = description.replace(/"/g, '\\"').trim().replace(/\n/g, '\n')
 
     const artifactChunks = []
     // Prepare the image: Encode it as a base64 dataURL
