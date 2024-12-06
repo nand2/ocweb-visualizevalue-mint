@@ -117,7 +117,7 @@ const timeLeft = computed(() => {
         <div>
           {{ tokenInfos.tokenURI.description }}
         </div>
-        <div v-if="isMintable">
+        <div v-if="isMintable" class="text-90">
           Mintable, closes in in {{ timeLeft }}
         </div>
         <div v-else>

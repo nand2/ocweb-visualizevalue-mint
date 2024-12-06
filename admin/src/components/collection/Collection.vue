@@ -30,7 +30,7 @@ const props = defineProps({
 })
 
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
-
+const { switchChainAsync, isPending: switchChainIsPending, error: switchChainError } = useSwitchChain()
 
 // Fetch infos about the collection
 const { data: collectionInfos, isLoading: collectionInfosLoading, isFetching: collectionInfosFetching, isError: collectionInfosIsError, error: collectionInfosError, isSuccess: collectionInfosLoaded } = useQuery({
@@ -87,13 +87,36 @@ const { data: collectionVersion, isLoading: collectionVersionLoading, isFetching
   staleTime: 3600 * 1000,
 })
 
-
 // Prepare the VVMint collection client
 const vvMintCollectionClient = computed(() => {
   return viemClientLoaded.value ? new VVMintCollectionV1Client(viemClient.value, props.collectionAddress) : null;
 })
 
+// Mutation to withdraw the funds from the collection
+const { isPending: withdrawFundsIsPending, isError: withdrawFundsIsError, error: withdrawFundsError, isSuccess: withdrawFundsIsSuccess, mutate: withdrawFundsMutate, reset: withdrawFundsReset } = useMutation({
+  mutationFn: async () => {
 
+    // Prepare the transaction
+    const transaction = await vvMintCollectionClient.value.prepareWithdrawFundsTransaction();
+
+    // Switch the network to the VVMint chain
+    await switchChainAsync({ chainId: props.vvMintchainId })
+
+    const hash = await vvMintCollectionClient.value.executeTransaction(transaction);
+    console.log(hash);
+
+    // Wait for the transaction to be mined
+    return await vvMintCollectionClient.value.waitForTransactionReceipt(hash);
+  },
+  onSuccess: async (data) => {
+    // Switch back to the original network
+    await switchChainAsync({ chainId: props.chainId })
+  },
+  onError: async (error) => {
+    // Switch back to the original network
+    await switchChainAsync({ chainId: props.chainId })
+  }
+})
 
 </script>
 
@@ -133,11 +156,19 @@ const vvMintCollectionClient = computed(() => {
         No token in this collection yet.
       </div>
 
-      <div class="operations">
-        <div class="op-add-new-collection" v-if="vvMintFactoryClient && collectionVersionLoaded && collectionVersion == 1">
+      <div class="operations"  v-if="vvMintFactoryClient && collectionVersionLoaded && collectionVersion == 1">
+        <div class="op-add-new-collection">
           <div class="button-area">
             <span class="button-text" @click="$emit('showCollectionTokenCreationForm')">
               <PlusLgIcon /> Add new token
+            </span>
+          </div>
+        </div>
+
+        <div class="op-add-new-collection" v-if="latestTokenIdLoaded && latestTokenId > 0">
+          <div class="button-area">
+            <span class="button-text" @click="withdrawFundsMutate">
+              Withdraw sale funds
             </span>
           </div>
         </div>

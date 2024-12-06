@@ -31,6 +31,13 @@ class VVMintCollectionV1Client {
     return await this.#VVMintCollectionV1Contract.read.get([tokenId])
   }
 
+  async prepareWithdrawFundsTransaction() {
+    return {
+      functionName: 'withdraw',
+      args: [],
+    }
+  }
+
   async prepareCreateCollectionTokenTransactions(name, description, imageContentType, imageBinaryData) {
     // Name, description need " to be escaped
     // (The smart contract does not escape them when generating the JSON)
