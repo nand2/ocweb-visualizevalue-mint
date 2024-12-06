@@ -32,8 +32,6 @@ const props = defineProps({
   },
 })
 
-const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
-
 
 // Load the token infos
 const { data: tokenInfos, isLoading: tokenInfosLoading, isFetching: tokenInfosFetching, isError: tokenInfosIsError, error: tokenInfosError, isSuccess: tokenInfosLoaded } = useQuery({

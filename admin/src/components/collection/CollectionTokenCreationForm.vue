@@ -37,7 +37,9 @@ const props = defineProps({
 
 
 const queryClient = useQueryClient()
-const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient({
+  chainId: props.vvMintchainId
+})
 const { switchChainAsync, isPending: switchChainIsPending, error: switchChainError } = useSwitchChain()
 
 const visualizeValueMintPluginClient = computed(() => {
@@ -148,10 +150,6 @@ const { isPending: createCollectionTokenIsPending, isError: createCollectionToke
       // Wait for the transaction to be mined
       await vvMintCollectionClient.value.waitForTransactionReceipt(hash);
     }
-  },
-  scope: {
-    // This scope will make the mutations run serially
-    id: 'createCollectionToken'
   },
   onSuccess: async (data) => {
     // Switch back to the original network

@@ -29,7 +29,9 @@ const props = defineProps({
   },
 })
 
-const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient({
+  chainId: props.vvMintchainId
+})
 const { switchChainAsync, isPending: switchChainIsPending, error: switchChainError } = useSwitchChain()
 
 // Fetch infos about the collection

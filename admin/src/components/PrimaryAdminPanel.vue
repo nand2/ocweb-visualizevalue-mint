@@ -47,7 +47,6 @@ const props = defineProps({
 })
 
 const queryClient = useQueryClient()
-const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
 
 // Get the staticFrontendPlugin
 const staticFrontendPlugin = computed(() => {
@@ -100,6 +99,12 @@ const availableVVMintBlockchains = [{
 const vvmintFactoryAddress = computed(() => {
   return config.value ? availableVVMintBlockchains.find(blockchain => blockchain.chainId == config.value.chainId).factory : null;
 })
+
+const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient({
+  chainId: config.value.chainId,
+  enabled: computed(() => config.value.chainId != null),
+})
+
 
 // Prepare the VVMint factory client
 const vvMintFactoryClient = computed(() => {

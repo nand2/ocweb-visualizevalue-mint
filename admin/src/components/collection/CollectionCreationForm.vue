@@ -85,10 +85,6 @@ const { isPending: createCollectionIsPending, isError: createCollectionIsError, 
     // Wait for the transaction to be mined
     return await props.vvMintFactoryClient.waitForTransactionReceipt(hash);
   },
-  scope: {
-    // This scope will make the mutations run serially
-    id: 'createCollection'
-  },
   onSuccess: async (data) => {
     // Switch back to the original network
     await switchChainAsync({ chainId: props.chainId })
@@ -153,7 +149,7 @@ const executePreparedcreateCollectionTransactions = async () => {
 
     <div class="buttons">
       <button @click="$emit('formCancelled')" :disabled="createCollectionIsPending">Cancel</button>
-      <button @click="executePreparedcreateCollectionTransactions" :disabled="name == '' || symbol == '' ||  createCollectionIsPending">Save</button>
+      <button @click="executePreparedcreateCollectionTransactions" :disabled="name == '' || symbol == '' || createCollectionIsPending">Save</button>
     </div>
       
 
