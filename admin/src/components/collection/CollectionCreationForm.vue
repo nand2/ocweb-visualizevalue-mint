@@ -99,6 +99,10 @@ const { isPending: createCollectionIsPending, isError: createCollectionIsError, 
     // Emit the event when the transaction is done
     emit('formExecuted')
   },
+  onError: async (error) => {
+    // Switch back to the original network
+    await switchChainAsync({ chainId: props.chainId })
+  }
 })
 const executePreparedcreateCollectionTransactions = async () => {
     createCollectionMutate()
@@ -112,8 +116,8 @@ const executePreparedcreateCollectionTransactions = async () => {
       <span>New collection</span>
     </h3>
 
-    <div style="margin-bottom: 1em">
-      This will create an ERC-1155 NFT collection, in which you will be able to create NFTs.
+    <div class="text-90" style="margin-bottom: 1em">
+      This will create a collection of 24h open edition ERC-1155 NFTs. You will be able to create the individual NFTs after creating the collection.
     </div>
 
     <div style="margin-bottom: 1em; display: grid; gap: 1em; grid-template-columns: 1fr 200px;">

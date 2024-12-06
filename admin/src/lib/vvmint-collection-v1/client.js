@@ -23,6 +23,10 @@ class VVMintCollectionV1Client {
     return await this.#VVMintCollectionV1Contract.read.latestTokenId()
   }
 
+  async getVersion() {
+    return await this.#VVMintCollectionV1Contract.read.version()
+  }
+
   async getTokenInfos(tokenId) {
     return await this.#VVMintCollectionV1Contract.read.get([tokenId])
   }

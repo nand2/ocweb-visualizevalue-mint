@@ -4,11 +4,20 @@ import { useQuery, useQueryClient, useMutation } from '@tanstack/vue-query'
 import { useAccount, useSwitchChain, useWriteContract, useWaitForTransactionReceipt, useConnectorClient } from '@wagmi/vue';
 
 import { VVMintCollectionV1Client } from '../../lib/vvmint-collection-v1/client.js';
+import { VisualizeValueMintPluginClient } from '../../lib/client.js';
 
 const emit = defineEmits(['formCancelled', 'formExecuted'])
 
 const props = defineProps({
+  contractAddress: {
+    type: String,
+    required: true,
+  },
   chainId: {
+    type: Number,
+    required: true,
+  },
+  websiteVersionIndex: {
     type: Number,
     required: true,
   },
@@ -31,9 +40,23 @@ const queryClient = useQueryClient()
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient()
 const { switchChainAsync, isPending: switchChainIsPending, error: switchChainError } = useSwitchChain()
 
+const visualizeValueMintPluginClient = computed(() => {
+  return viemClientLoaded.value ? new VisualizeValueMintPluginClient(viemClient.value, props.contractAddress, props.pluginInfos.plugin) : null;
+})
+
 // Prepare the VVMint collection client
 const vvMintCollectionClient = computed(() => {
   return viemClientLoaded.value ? new VVMintCollectionV1Client(viemClient.value, props.collectionAddress) : null;
+})
+
+// Get the OCWebiste plugin config
+const { data: config, isLoading: configLoading, isFetching: configFetching, isError: configIsError, error: configError, isSuccess: configLoaded } = useQuery({
+  queryKey: ['OCWebsiteVersionPluginConfig', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
+  queryFn: async () => {
+    const result = await visualizeValueMintPluginClient.value.getConfig(props.websiteVersionIndex);
+    return result;
+  },
+  enabled: computed(() => visualizeValueMintPluginClient.value != null),
 })
 
 // Fetch infos about the collection
@@ -104,7 +127,7 @@ const recomputeImageContentTypeAndBinaryData = async () => {
 }
 
 
-// Save the collection
+// Save the collection token
 const { isPending: createCollectionTokenIsPending, isError: createCollectionTokenIsError, error: createCollectionTokenError, isSuccess: createCollectionTokenIsSuccess, mutate: createCollectionTokenMutate, reset: createCollectionTokenReset } = useMutation({
   mutationFn: async () => {
 
@@ -140,6 +163,10 @@ const { isPending: createCollectionTokenIsPending, isError: createCollectionToke
     // Emit the event when the transaction is done
     emit('formExecuted')
   },
+  onError: async (error) => {
+    // Switch back to the original network
+    await switchChainAsync({ chainId: props.chainId })
+  }
 })
 const executePreparedcreateCollectionTokenTransactions = async () => {
     createCollectionTokenMutate()
@@ -150,11 +177,13 @@ const executePreparedcreateCollectionTokenTransactions = async () => {
 <template>
   <div class="form">
     <h3 class="title">
-      <span>New token</span>
+      <span>New 24h open edition token</span>{{'/' + (configLoaded && config.rootPath.length > 0 ? config.rootPath.join('/') + '/' : '') + '#/' + collectionAddress }}
     </h3>
 
-    <div style="margin-bottom: 1em">
-      This will create a new token in the collection <strong>{{ collectionInfosLoaded ? collectionInfos.name : '...' }}</strong>. It will be mintable for 24 hours.
+    <div class="text-90" style="margin-bottom: 1em">
+      This will create a new token in the collection <strong>{{ collectionInfosLoaded ? collectionInfos.name : '...' }}</strong>, and it will be immediately mintable for 24 hours without any limit. <br />
+      The mint price is <a href="https://docs.mint.vv.xyz/guide/how-it-works" target="_blank">twice the mint network gas cost</a> : the minter pay 50% to the network and 50% to the collection creator. <br />
+      This form support raw images upload. For more advanced renderers (p5.js, ...), use the <a :href="'/' + (configLoaded && config.rootPath.length > 0 ? config.rootPath.join('/') + '/' : '') + '#/' + collectionAddress" target="_blank">form provided by the frontend</a>.
     </div>
 
     <div style="margin-bottom: 1em; display: grid; gap: 1em; grid-template-columns: 1fr 1fr;">

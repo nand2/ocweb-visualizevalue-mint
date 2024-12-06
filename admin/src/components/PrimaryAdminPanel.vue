@@ -106,8 +106,23 @@ const vvMintFactoryClient = computed(() => {
   return viemClientLoaded.value && vvmintFactoryAddress.value ? new VVMintFactoryClient(viemClient.value, vvmintFactoryAddress.value) : null;
 })
 
+// Get the version of the factory
+const { data: factoryVersion, isLoading: factoryVersionLoading, isFetching: factoryVersionFetching, isError: factoryVersionIsError, error: factoryVersionError, isSuccess: factoryVersionLoaded } = useQuery({
+  queryKey: ['VVMintFactoryVersion', vvmintFactoryAddress.value, computed(() => config.value.chainId)],
+  queryFn: async () => {
+    const response = await fetch(`web3://${vvmintFactoryAddress.value}:${config.value.chainId}/version?returns=(uint256)`)
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
+    }
+    const decodedResponse = await response.json()
+    // console.log(decodedResponse[0])
+    return Number(decodedResponse[0]);
+  },
+  staleTime: 3600 * 1000,
+  enabled: computed(() => vvMintFactoryClient.value != null),
+})
+
 // Fetch the list of collections of the creator
-// Get the available themes
 const { data: collections, isLoading: collectionsLoading, isFetching: collectionsFetching, isError: collectionsIsError, error: collectionsError, isSuccess: collectionsLoaded } = useQuery({
   queryKey: ['PluginVVMintcollections', props.pluginInfos.plugin, computed(() => config.value.chainId), computed(() => config.value.creatorAddress)],
   queryFn: async () => {
@@ -149,7 +164,7 @@ const collectionOfCollectionTokenCreationForm = ref(null)
       <div v-else-if="staticFrontendLoaded">
 
         <div class="collections">
-          <h3>My collections</h3>
+          <h3>My 24h open edition collections</h3>
 
           <div v-if="collectionsLoading">
             Loading collections...
@@ -180,7 +195,7 @@ const collectionOfCollectionTokenCreationForm = ref(null)
           </div>
 
           <div class="operations">
-            <div class="op-add-new-collection" v-if="vvMintFactoryClient">
+            <div class="op-add-new-collection" v-if="vvMintFactoryClient && factoryVersionLoaded && factoryVersion == 1">
               <div class="button-area">
                 <span class="button-text" @click="showCollectionCreationForm = true;">
                   <PlusLgIcon /> Add new collection
@@ -209,7 +224,9 @@ const collectionOfCollectionTokenCreationForm = ref(null)
 
     <div v-else-if="showCollectionTokenCreationForm" class="collection-token-creation-form">
       <CollectionTokenCreationForm
+        :contractAddress
         :chainId
+        :websiteVersionIndex
         :vvMintchainId="config.chainId"
         :collectionAddress="collectionOfCollectionTokenCreationForm"
         :pluginInfos

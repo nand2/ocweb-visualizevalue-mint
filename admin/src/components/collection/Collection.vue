@@ -72,6 +72,21 @@ const { data: latestTokenId, isLoading: latestTokenIdLoading, isFetching: latest
   staleTime: 3600 * 1000,
 })
 
+// Get the version of the collection
+const { data: collectionVersion, isLoading: collectionVersionLoading, isFetching: collectionVersionFetching, isError: collectionVersionIsError, error: collectionVersionError, isSuccess: collectionVersionLoaded } = useQuery({
+  queryKey: ['CollectionVersion', props.collectionAddress, props.vvMintchainId],
+  queryFn: async () => {
+    const response = await fetch(`web3://${props.collectionAddress}:${props.vvMintchainId}/version?returns=(uint256)`)
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
+    }
+    const decodedResponse = await response.json()
+    // console.log(decodedResponse[0])
+    return Number(decodedResponse[0]);
+  },
+  staleTime: 3600 * 1000,
+})
+
 
 // Prepare the VVMint collection client
 const vvMintCollectionClient = computed(() => {
@@ -119,7 +134,7 @@ const vvMintCollectionClient = computed(() => {
       </div>
 
       <div class="operations">
-        <div class="op-add-new-collection" v-if="vvMintFactoryClient">
+        <div class="op-add-new-collection" v-if="vvMintFactoryClient && collectionVersionLoaded && collectionVersion == 1">
           <div class="button-area">
             <span class="button-text" @click="$emit('showCollectionTokenCreationForm')">
               <PlusLgIcon /> Add new token
