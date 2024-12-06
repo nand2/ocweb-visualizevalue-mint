@@ -79,7 +79,7 @@ if [ "$CHAIN_ID" == "31337" ] || [ "$CHAIN_ID" == "17000" ]; then
     npx ocweb --rpc $RPC_URL list --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID | tee >(cat - >&5))"
 
   # Get the address of the OCWebsite. Format is : "<ethereum-address> (token <number> subdomain vvmint)"
-  OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep "subdomain vvmint)" | grep -oP '0x\w+')
+  OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep "subdomain vvmint)" | grep -oP '0x\w+' || true)
 fi
 
 # If the OCWebsite was not minted, we mint it
@@ -141,7 +141,7 @@ echo "Plugin address: $PLUGIN_ADDRESS"
 
 # Get all the folder names starting with mint-
 THEMES=$(ls -d $ROOT_FOLDER/mint-* | xargs -n1 basename)
-# Dev
+# Temporary:
 THEMES="mint-base"
 
 # For each theme: mint an OCWebsite, build the theme, upload it
@@ -154,7 +154,7 @@ for THEME in $THEMES; do
       npx ocweb --rpc $RPC_URL list --factory-address $OCWEBSITE_FACTORY_ADDRESS $CHAIN_ID | tee >(cat - >&5))"
 
     # Get the address of the OCWebsite. Format is : "<ethereum-address> (token <number> subdomain vvmint)"
-    THEME_OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep "subdomain vv$THEME)" | grep -oP '0x\w+')
+    THEME_OCWEBSITE_ADDRESS=$(echo "$OUTPUT" | grep "subdomain vv$THEME)" | grep -oP '0x\w+' || true)
   fi
 
   # If the OCWebsite was not minted, we mint it

@@ -103,8 +103,8 @@ const timeLeft = computed(() => {
   <div v-if="tokenInfosLoading">
     ...
   </div>
-  <div v-else-if="tokenInfosIsError" class="text-danger">
-    !
+  <div v-else-if="tokenInfosIsError" class="text-danger text-90">
+    Failed to load token: {{ tokenInfosError }}
   </div>
   <div v-else-if="tokenInfosLoaded" class="token">
     

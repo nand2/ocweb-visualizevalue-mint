@@ -177,7 +177,7 @@ const executePreparedcreateCollectionTokenTransactions = async () => {
 <template>
   <div class="form">
     <h3 class="title">
-      <span>New 24h open edition token</span>{{'/' + (configLoaded && config.rootPath.length > 0 ? config.rootPath.join('/') + '/' : '') + '#/' + collectionAddress }}
+      <span>New 24h open edition token</span>
     </h3>
 
     <div class="text-90" style="margin-bottom: 1em">
