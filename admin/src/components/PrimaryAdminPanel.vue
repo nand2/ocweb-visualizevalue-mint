@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/vue-query'
-import { useConnectorClient } from '@wagmi/vue';
+import { useConnectorClient, useAccount } from '@wagmi/vue';
 
 import { useIsLocked } from 'ocweb/src/tanstack-vue.js';
 import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from 'ocweb/src/plugins/staticFrontend/tanstack-vue.js';
@@ -47,6 +47,7 @@ const props = defineProps({
 })
 
 const queryClient = useQueryClient()
+const { isConnected, address } = useAccount();
 
 // Get the staticFrontendPlugin
 const staticFrontendPlugin = computed(() => {
@@ -169,7 +170,14 @@ const collectionOfCollectionTokenCreationForm = ref(null)
       <div v-else-if="staticFrontendLoaded">
 
         <div class="collections">
-          <h3>My 24h open edition collections</h3>
+          <h3>
+            <span v-if="isConnected && address == config.creatorAddress">
+              My 24h open edition collections
+            </span>
+            <span v-else>
+              24h open edition collections of {{ config.creatorAddress.slice(0, 6) }}...{{ config.creatorAddress.slice(-4) }}
+            </span>
+          </h3>
 
           <div v-if="collectionsLoading">
             Loading collections...
