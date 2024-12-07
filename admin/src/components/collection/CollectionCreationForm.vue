@@ -37,6 +37,7 @@ const { switchChainAsync, isPending: switchChainIsPending, error: switchChainErr
 const name = ref('')
 const symbol = ref('')
 const description = ref('')
+const useContractCloning = ref(false)
 
 // Helper function to read the binary data of a file
 const readFileData = (file) => {
@@ -73,7 +74,7 @@ const { isPending: createCollectionIsPending, isError: createCollectionIsError, 
   mutationFn: async () => {
 
     // Prepare the transaction
-    const transaction = await props.vvMintFactoryClient.prepareCreateCollectionTransaction(name.value, symbol.value, description.value, imageContentType.value, imageBinaryData.value);
+    const transaction = await props.vvMintFactoryClient.prepareCreateCollectionTransaction(name.value, symbol.value, description.value, imageContentType.value, imageBinaryData.value, useContractCloning.value);
     console.log(transaction);
 
     // Switch the network to the VVMint chain
@@ -138,6 +139,17 @@ const executePreparedcreateCollectionTransactions = async () => {
       <div>
         <label>Image <small>Optional</small></label>
         <input type="file" id="collection-image" accept="image/*" @change="recomputeImageContentTypeAndBinaryData()" />
+      </div>
+    </div>
+
+    <div style="margin-bottom: 1em; display: grid; gap: 1em; grid-template-columns: 1fr;">
+      <div>
+        <label>Collection creation method</label>
+        
+        <label class="text-90" style="margin-top: 0.5em; cursor: pointer; font-weight: normal;">
+          <input type="checkbox" v-model="useContractCloning" style="display: inline; width: auto;" />
+          Use contract cloning : Cheaper to create, but slightly more costly for minters.
+        </label>
       </div>
     </div>
 

@@ -23,7 +23,7 @@ class VVMintFactoryClient {
     return await this.#vvMintFactoryContract.read.getCreatorCollections([creatorAddress])
   }
 
-  async prepareCreateCollectionTransaction(name, symbol, description, imageContentType, imageBinaryData) {
+  async prepareCreateCollectionTransaction(name, symbol, description, imageContentType, imageBinaryData, useContractCloning) {
     // Name, symbol, description need " to be escaped
     // (The smart contract does not escape them when generating the JSON)
     // Trim them as well
@@ -43,7 +43,7 @@ class VVMintFactoryClient {
     }
 
     return {
-      functionName: 'create',
+      functionName: useContractCloning ? 'clone' : 'create',
       args: [ name, symbol, description, imageDataChunks ],
     }
   }

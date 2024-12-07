@@ -93,7 +93,7 @@ const availableVVMintBlockchains = [{
 }, {
   chainId: 31337,
   name: "Hardhat",
-  factory: "0x870526b7973b56163a6997bB7C886F5E4EA53638",
+  factory: "0x82e01223d51Eb87e16A03E24687EDF0F294da6f1",
 }]
 
 // Determine the VVMInt factory address
@@ -103,7 +103,7 @@ const vvmintFactoryAddress = computed(() => {
 
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient({
   chainId: config.value.chainId,
-  enabled: computed(() => config.value.chainId != null),
+  enabled: computed(() => (fileContentLoaded.value || fileContentIsError.value) && config.value.chainId != null),
 })
 
 
