@@ -181,7 +181,7 @@ const executePreparedcreateCollectionTokenTransactions = async () => {
     <div class="text-90" style="margin-bottom: 1em">
       This will create a new token in the collection <strong>{{ collectionInfosLoaded ? collectionInfos.name : '...' }}</strong>, and it will be immediately mintable for 24 hours without any limit. <br />
       The mint price is <a href="https://docs.mint.vv.xyz/guide/how-it-works" target="_blank">twice the mint network gas cost</a> : the minter pay 50% to the network and 50% to the collection creator. <br />
-      This form support raw images upload. For more advanced renderers (p5.js, ...), use the <a :href="'/' + (configLoaded && config.rootPath.length > 0 ? config.rootPath.join('/') + '/' : '') + '#/' + collectionAddress" target="_blank">form provided by the frontend</a>.
+      This form support raw images upload. For more advanced renderers (p5.js, ...), use the <a :href="'web3://' + contractAddress + ':' + chainId + '/' + (configLoaded && config.rootPath.length > 0 ? config.rootPath.join('/') + '/' : '') + '#/' + collectionAddress" target="_blank">form provided by the frontend</a>.
     </div>
 
     <div style="margin-bottom: 1em; display: grid; gap: 1em; grid-template-columns: 1fr 1fr;">

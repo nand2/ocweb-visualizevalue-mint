@@ -5,6 +5,7 @@ import { useConnectorClient, useAccount } from '@wagmi/vue';
 
 import { useIsLocked } from 'ocweb/src/tanstack-vue.js';
 import { useStaticFrontendPluginClient, useStaticFrontend, useStaticFrontendFileContent, invalidateStaticFrontendFileContentQuery } from 'ocweb/src/plugins/staticFrontend/tanstack-vue.js';
+import { VisualizeValueMintPluginClient } from '../lib/client.js';
 
 import PlusLgIcon from './Icons/PlusLgIcon.vue';
 import TrashIcon from './Icons/TrashIcon.vue';
@@ -48,6 +49,31 @@ const props = defineProps({
 
 const queryClient = useQueryClient()
 const { isConnected, address } = useAccount();
+
+//
+// Load the config stored in the plugin
+//
+
+const { data: viemClientForPlugin, isSuccess: viemClientForPluginLoaded } = useConnectorClient()
+
+const visualizeValueMintPluginClient = computed(() => {
+  return viemClientForPluginLoaded.value ? new VisualizeValueMintPluginClient(viemClientForPlugin.value, props.contractAddress, props.pluginInfos.plugin) : null;
+})
+
+// Get the config
+const { data: pluginConfig, isLoading: pluginConfigLoading, isFetching: pluginConfigFetching, isError: pluginConfigIsError, error: pluginConfigError, isSuccess: pluginConfigLoaded } = useQuery({
+  queryKey: ['OCWebsiteVersionPluginConfig', props.contractAddress, props.chainId, computed(() => props.websiteVersionIndex)],
+  queryFn: async () => {
+    const result = await visualizeValueMintPluginClient.value.getConfig(props.websiteVersionIndex);
+    return result;
+  },
+  enabled: computed(() => visualizeValueMintPluginClient.value != null),
+})
+
+//
+// Load the config stored in the .config/visualizevalue-mint/config.json file,
+// (or the default config if the file does not exist)
+//
 
 // Get the staticFrontendPlugin
 const staticFrontendPlugin = computed(() => {
@@ -170,7 +196,7 @@ const collectionOfCollectionTokenCreationForm = ref(null)
       <div v-else-if="staticFrontendLoaded">
 
         <div class="collections">
-          <h3>
+          <h3 style="margin-bottom: 0.2em">
             <span v-if="isConnected && address == config.creatorAddress">
               My 24h open edition collections
             </span>
@@ -178,6 +204,9 @@ const collectionOfCollectionTokenCreationForm = ref(null)
               24h open edition collections of {{ config.creatorAddress.slice(0, 6) }}...{{ config.creatorAddress.slice(-4) }}
             </span>
           </h3>
+          <div class="text-90" style="margin-bottom: 1em;">
+            The collections are browsable and mintable by your website visitors at the <a :href="'web3://' + contractAddress + ':' + chainId + '/' + (pluginConfig.rootPath.length > 0 ? pluginConfig.rootPath.join('/') + '/' : '')" target="_blank">path you configured</a>.
+          </div>
 
           <div v-if="collectionsLoading">
             Loading collections...
