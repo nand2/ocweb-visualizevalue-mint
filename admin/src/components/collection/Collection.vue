@@ -180,7 +180,7 @@ const { isPending: withdrawFundsIsPending, isError: withdrawFundsIsError, error:
           </div>
         </div>
       </div>
-      <div v-else-if="isConnected && address != creatorAddress"  class="text-80 text-muted">
+      <div v-else-if="isConnected && address != creatorAddress" class="text-80 text-muted" style="margin-top: 1em;">
         Switch to the creator address to add tokens to the collection.
       </div>
     </div>

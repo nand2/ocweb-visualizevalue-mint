@@ -9,7 +9,7 @@ import PlusLgIcon from './Icons/PlusLgIcon.vue';
 import TrashIcon from './Icons/TrashIcon.vue';
 import SaveIcon from './Icons/SaveIcon.vue';
 import { defaultConfig } from '../assets/defaultConfig';
-import { VVFactoryDeployments } from '../lib/VVFactoryDeployments.js';
+import { VVFactoryDeployments } from '../lib/vvmint-factory/deployments.js';
 
 const props = defineProps({
   contractAddress: {
