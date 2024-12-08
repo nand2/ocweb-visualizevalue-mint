@@ -141,8 +141,6 @@ echo "Plugin address: $PLUGIN_ADDRESS"
 
 # Get all the folder names starting with mint-
 THEMES=$(ls -d $ROOT_FOLDER/mint-* | xargs -n1 basename)
-# Temporary:
-THEMES="mint-base"
 
 # For each theme: mint an OCWebsite, build the theme, upload it
 for THEME in $THEMES; do

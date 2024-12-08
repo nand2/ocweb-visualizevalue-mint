@@ -9,6 +9,7 @@ import PlusLgIcon from './Icons/PlusLgIcon.vue';
 import TrashIcon from './Icons/TrashIcon.vue';
 import SaveIcon from './Icons/SaveIcon.vue';
 import { defaultConfig } from '../assets/defaultConfig';
+import { VVFactoryDeployments } from '../lib/VVFactoryDeployments.js';
 
 const props = defineProps({
   contractAddress: {
@@ -77,18 +78,6 @@ watch(fileContent, (newValue) => {
     config.value = decodeConfigFileContent(newValue)
   }
 });
-
-// The list of available blockchains where VV Mint is deployed
-const availableVVMintBlockchains = [{
-  chainId: 1,
-  name: "Ethereum mainnet",
-  factory: "0xd717Fe677072807057B03705227EC3E3b467b670",
-}, {
-  chainId: 11155111,
-  name: "Sepolia (testnet)",
-  factory: "0x750C5a6CFD40C9CaA48C31D87AC2a26101Acd517",
-}]
-
 
 
 const isValidEthereumAddress = (address) => {
@@ -201,7 +190,7 @@ const executePreparedAddFilesTransactions = async () => {
       <div>
         <label>Blockchain</label>
         <select v-model="config.chainId" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
-          <option v-for="availableVVMintBlockchain in availableVVMintBlockchains" :key="availableVVMintBlockchain.chainId" :value="availableVVMintBlockchain.chainId">{{ availableVVMintBlockchain.name }}</option>
+          <option v-for="availableVVMintBlockchain in VVFactoryDeployments" :key="availableVVMintBlockchain.chainId" :value="availableVVMintBlockchain.chainId">{{ availableVVMintBlockchain.name }}</option>
         </select>
       </div>
       <div>

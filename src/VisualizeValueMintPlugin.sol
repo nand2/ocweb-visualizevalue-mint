@@ -74,7 +74,7 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin, Ownable2
                 name: "visualizeValueMint",
                 version: "0.1.1",
                 title: "VV Mint Artist Platform",
-                subTitle: "Create and display your 24h open edition NFTs with the VV Mint Artist Platform",
+                subTitle: "Create and show your 24h open edition NFTs with the VV Mint Artist Platform",
                 author: "Jalil (contracts && frontend) / Nand (plugin)",
                 homepage: "https://mint.vv.xyz/",
                 dependencies: dependencies,

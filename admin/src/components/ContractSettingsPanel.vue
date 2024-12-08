@@ -79,19 +79,24 @@ watch(config, () => {
 })
 
 // Load the theme
-const themeFieldValue = ref(
-  configLoaded.value ? 
-    (config.value.theme != "0x0000000000000000000000000000000000000000" ? 
-      config.value.theme : 
-      (availableThemesLoaded.value && availableThemes.value.length > 0 ? 
-        availableThemes.value[0].fileServer : 
-        null)) 
-    : null)
-watch(config, () => {
-  themeFieldValue.value = config.value.theme
-  if(themeFieldValue.value == "0x0000000000000000000000000000000000000000" && availableThemesLoaded.value && availableThemes.value.length > 0) {
-    themeFieldValue.value = availableThemes.value[0].fileServer
+const getInitialThemeFieldValue = () => {
+  if(configLoaded.value) {
+    if(config.value.theme != "0x0000000000000000000000000000000000000000") {
+      return config.value.theme
+    } else {
+      if(availableThemesLoaded.value && availableThemes.value.length > 0) {
+        return availableThemes.value[0].fileServer
+      }
+    }
   }
+  return null
+}
+const themeFieldValue = ref(getInitialThemeFieldValue())
+watch(config, () => {
+  themeFieldValue.value = getInitialThemeFieldValue()
+})
+watch(availableThemes, () => {
+  themeFieldValue.value = getInitialThemeFieldValue()
 })
 
 const showForm = ref(false)

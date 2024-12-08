@@ -12,6 +12,7 @@ import TrashIcon from './Icons/TrashIcon.vue';
 import SaveIcon from './Icons/SaveIcon.vue';
 import { defaultConfig } from '../assets/defaultConfig';
 import { VVMintFactoryClient } from '../lib/vvmint-factory/client.js';
+import { VVFactoryDeployments } from '../lib/vvmint-factory/deployments.js';
 import CollectionCreationForm from './collection/CollectionCreationForm.vue';
 import CollectionTokenCreationForm from './collection/CollectionTokenCreationForm.vue';
 import Collection from './collection/Collection.vue';
@@ -107,24 +108,14 @@ watch(fileContent, (newValue) => {
   }
 });
 
-// The list of available blockchains where VV Mint is deployed
-const availableVVMintBlockchains = [{
-  chainId: 1,
-  name: "Ethereum mainnet",
-  factory: "0xd717Fe677072807057B03705227EC3E3b467b670",
-}, {
-  chainId: 11155111,
-  name: "Sepolia (testnet)",
-  factory: "0x750C5a6CFD40C9CaA48C31D87AC2a26101Acd517",
-}, {
-  chainId: 31337,
-  name: "Hardhat",
-  factory: "0x82e01223d51Eb87e16A03E24687EDF0F294da6f1",
-}]
-
-// Determine the VVMInt factory address
+// Determine the VVMint factory address
 const vvmintFactoryAddress = computed(() => {
-  return config.value ? availableVVMintBlockchains.find(blockchain => blockchain.chainId == config.value.chainId).factory : null;
+  return config.value ? VVFactoryDeployments.find(blockchain => blockchain.chainId == config.value.chainId).factory : null;
+})
+
+// Determine the name of the blockchain of the VVMint factory
+const vvmintFactoryBlockchainName = computed(() => {
+  return config.value ? VVFactoryDeployments.find(blockchain => blockchain.chainId == config.value.chainId).name : null;
 })
 
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient({
@@ -198,10 +189,10 @@ const collectionOfCollectionTokenCreationForm = ref(null)
         <div class="collections">
           <h3 style="margin-bottom: 0.2em">
             <span v-if="isConnected && address == config.creatorAddress">
-              My 24h open edition collections
+              My 24h open edition collections on {{ vvmintFactoryBlockchainName }}
             </span>
             <span v-else>
-              24h open edition collections of {{ config.creatorAddress.slice(0, 6) }}...{{ config.creatorAddress.slice(-4) }}
+              24h open edition collections of {{ config.creatorAddress.slice(0, 6) }}...{{ config.creatorAddress.slice(-4) }} on {{ vvmintFactoryBlockchainName }}
             </span>
           </h3>
           <div class="text-90" style="margin-bottom: 1em;">
@@ -230,13 +221,14 @@ const collectionOfCollectionTokenCreationForm = ref(null)
                 :chainId
                 :vvMintchainId="config.chainId"
                 :collectionAddress="collection"
+                :creatorAddress="config.creatorAddress"
                 :vvMintFactoryClient
                 @show-collection-token-creation-form="showCollectionTokenCreationForm = true; collectionOfCollectionTokenCreationForm = collection;"
                 />
             </div>
           </div>
 
-          <div class="operations">
+          <div class="operations" v-if="isConnected && address == config.creatorAddress">
             <div class="op-add-new-collection" v-if="vvMintFactoryClient && factoryVersionLoaded && factoryVersion == 1">
               <div class="button-area">
                 <span class="button-text" @click="showCollectionCreationForm = true;">
@@ -244,6 +236,9 @@ const collectionOfCollectionTokenCreationForm = ref(null)
                 </span>
               </div>
             </div>
+          </div>
+          <div v-else-if="isConnected && address != config.creatorAddress" class="text-80 text-muted">
+            Switch to the creator address to create collections.
           </div>
         </div>
 

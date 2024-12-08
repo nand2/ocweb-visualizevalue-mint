@@ -19,6 +19,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  creatorAddress: {
+    type: String,
+    required: true,
+  },
   vvMintchainId: {
     type: Number,
     required: true,
@@ -29,6 +33,7 @@ const props = defineProps({
   },
 })
 
+const { isConnected, address } = useAccount();
 const { data: viemClient, isSuccess: viemClientLoaded } = useConnectorClient({
   chainId: props.vvMintchainId
 })
@@ -154,11 +159,11 @@ const { isPending: withdrawFundsIsPending, isError: withdrawFundsIsError, error:
           :tokenId="tokenId"
           />
       </div>
-      <div v-else-if="latestTokenIdLoaded && latestTokenId == 0" class="text-muted text-90">
+      <div v-else-if="latestTokenIdLoaded && latestTokenId == 0" class="text-muted text-90" style="margin-bottom: 1em;">
         No token in this collection yet.
       </div>
 
-      <div class="operations"  v-if="vvMintFactoryClient && collectionVersionLoaded && collectionVersion == 1">
+      <div class="operations" v-if="isConnected && address == creatorAddress && vvMintFactoryClient && collectionVersionLoaded && collectionVersion == 1">
         <div class="op-add-new-collection">
           <div class="button-area">
             <span class="button-text" @click="$emit('showCollectionTokenCreationForm')">
@@ -174,6 +179,9 @@ const { isPending: withdrawFundsIsPending, isError: withdrawFundsIsError, error:
             </span>
           </div>
         </div>
+      </div>
+      <div v-else-if="isConnected && address != creatorAddress"  class="text-80 text-muted">
+        Switch to the creator address to add tokens to the collection.
       </div>
     </div>
     
