@@ -14,9 +14,16 @@ try {
   if(window.__NUXT__.config.public.chainId == 1) {
     window.__NUXT__.config.public.factoryAddress = "0xd717Fe677072807057B03705227EC3E3b467b670";
     window.__NUXT__.config.public.blockExplorer = "https://etherscan.io"
-    window.__NUXT__.config.public.rpc1 = "https://eth.llamarpc.com"
+    window.__NUXT__.config.public.rpc1 = "https://ethereum-rpc.publicnode.com"
     window.__NUXT__.config.public.rpc2 = "https://eth.drpc.org"
-    window.__NUXT__.config.public.rpc3 = "https://1rpc.io/eth"
+    window.__NUXT__.config.public.rpc3 = "https://eth.llamarpc.com"
+  }
+  else if(window.__NUXT__.config.public.chainId == 10) {
+    window.__NUXT__.config.public.factoryAddress = "0xF79BFf74CE07d3aaE21c3Bb1988e7BDb4E31ABeb";
+    window.__NUXT__.config.public.blockExplorer = "https://optimistic.etherscan.io"
+    window.__NUXT__.config.public.rpc1 = "https://mainnet.optimism.io"
+    window.__NUXT__.config.public.rpc2 = "https://optimism-rpc.publicnode.com"
+    window.__NUXT__.config.public.rpc3 = "wss://optimism.drpc.org"
   }
   else if(window.__NUXT__.config.public.chainId == 11155111) {
     window.__NUXT__.config.public.factoryAddress = "0x750C5a6CFD40C9CaA48C31D87AC2a26101Acd517";
@@ -24,6 +31,13 @@ try {
     window.__NUXT__.config.public.rpc1 = "https://ethereum-sepolia-rpc.publicnode.com"
     window.__NUXT__.config.public.rpc2 = "https://sepolia.drpc.org"
     window.__NUXT__.config.public.rpc3 = "https://1rpc.io/sepolia"
+  }
+  else if(window.__NUXT__.config.public.chainId == 17000) {
+    window.__NUXT__.config.public.factoryAddress = "0x445654af956500b600AdC4c1897Cc587FD5E17BB";
+    window.__NUXT__.config.public.blockExplorer = "https://holesky.etherscan.io/"
+    window.__NUXT__.config.public.rpc1 = "https://ethereum-holesky-rpc.publicnode.com"
+    window.__NUXT__.config.public.rpc2 = "https://holesky.drpc.org"
+    window.__NUXT__.config.public.rpc3 = "https://holesky.gateway.tenderly.co"
   }
   else if(window.__NUXT__.config.public.chainId == 31337) {
     window.__NUXT__.config.public.factoryAddress = "0x870526b7973b56163a6997bB7C886F5E4EA53638";
@@ -39,4 +53,10 @@ try {
 catch (error) {
   console.error("Failed loading vv-mint plugin config, using the default config. Error: ", error);
 }
+
+const nextScript = document.createElement('script');
+nextScript.src = 'NUXT_ENTRYPOINT_FILE';
+nextScript.type = 'module';
+nextScript.crossorigin = '';
+document.body.appendChild(nextScript);
 </script>

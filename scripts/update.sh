@@ -174,11 +174,18 @@ if [ "$SECTION" == "theme-files" ]; then
   rm -Rf $ROOT_FOLDER/dist
   mkdir -p dist
   cp -R $THEME/.output/public/* dist
-  # We inject the contents of assets/mint-index-patch.html into the base index.html, just before the </body> tag
+  # In index.html, we find the first <script> tag, we extract its URL, and we remove the tag.
+  # We inject the contents of assets/mint-index-patch.html into the base index.html, just before the </body> tag, and within the patch, we replace NUXT_ENTRYPOINT_FILE by the extracted URL of the script tag.
   node -e "
     const fs = require('fs');
-    const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8');
-    fs.writeFileSync('$ROOT_FOLDER/dist/index.html', fs.readFileSync('$ROOT_FOLDER/dist/index.html', 'utf8').replace(/<\/body>/i, patch + '\n</body>'));
+    let indexHtml = fs.readFileSync('$ROOT_FOLDER/dist/index.html', 'utf8');
+
+    const scriptTag = indexHtml.match(/<script type=\"module\" src=\"([^\"]+)\" crossorigin><\/script>/);
+    const scriptUrl = scriptTag[1];
+    indexHtml = indexHtml.replace(scriptTag[0], '')
+    
+    const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8').replace('NUXT_ENTRYPOINT_FILE', scriptUrl);
+    fs.writeFileSync('$ROOT_FOLDER/dist/index.html', indexHtml.replace(/<\/body>/i, patch + '\n</body>'));
   "
 
   echo "Updating files on theme ${PLUGIN_THEME_WEB3_ADDRESS} ..."

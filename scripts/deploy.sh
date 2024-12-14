@@ -141,6 +141,10 @@ echo "Plugin address: $PLUGIN_ADDRESS"
 
 # Get all the folder names starting with mint-
 THEMES=$(ls -d $ROOT_FOLDER/mint-* | xargs -n1 basename)
+# If local : only test base theme
+if [ "$CHAIN_ID" == "31337" ]; then
+  THEMES="mint-base"
+fi
 
 # For each theme: mint an OCWebsite, build the theme, upload it
 for THEME in $THEMES; do
@@ -175,11 +179,18 @@ for THEME in $THEMES; do
   rm -Rf $ROOT_FOLDER/dist
   mkdir -p dist
   cp -R $THEME/.output/public/* dist
-  # We inject the contents of assets/mint-index-patch.html into the base index.html, just before the </body> tag
+  # In index.html, we find the first <script> tag, we extract its URL, and we remove the tag.
+  # We inject the contents of assets/mint-index-patch.html into the base index.html, just before the </body> tag, and within the patch, we replace NUXT_ENTRYPOINT_FILE by the extracted URL of the script tag.
   node -e "
     const fs = require('fs');
-    const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8');
-    fs.writeFileSync('$ROOT_FOLDER/dist/index.html', fs.readFileSync('$ROOT_FOLDER/dist/index.html', 'utf8').replace(/<\/body>/i, patch + '\n</body>'));
+    let indexHtml = fs.readFileSync('$ROOT_FOLDER/dist/index.html', 'utf8');
+
+    const scriptTag = indexHtml.match(/<script type=\"module\" src=\"([^\"]+)\" crossorigin><\/script>/);
+    const scriptUrl = scriptTag[1];
+    indexHtml = indexHtml.replace(scriptTag[0], '')
+    
+    const patch = fs.readFileSync('$ROOT_FOLDER/assets/mint-index-patch.html', 'utf8').replace('NUXT_ENTRYPOINT_FILE', scriptUrl);
+    fs.writeFileSync('$ROOT_FOLDER/dist/index.html', indexHtml.replace(/<\/body>/i, patch + '\n</body>'));
   "
   
   # Upload the theme to the OCWebsite

@@ -5,4 +5,9 @@ script = "scripts"
 solc = "0.8.24"
 evm_version = "cancun"
 
+remappings = [
+  "@ocweb=lib/ocweb/contracts",
+  "scripty.sol/=lib/scripty.sol",
+]
+
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
