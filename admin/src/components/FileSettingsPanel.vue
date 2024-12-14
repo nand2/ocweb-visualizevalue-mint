@@ -72,10 +72,12 @@ const decodeConfigFileContent = (fileContent) => {
   return { ...defaultConfig, ...decodedConfig };
 }
 const config = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : defaultConfig)
+const originalConfig = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : defaultConfig)
 // When the file content is fetched, set the text
 watch(fileContent, (newValue) => {
   if(fileContentLoaded.value) {
     config.value = decodeConfigFileContent(newValue)
+    originalConfig.value = decodeConfigFileContent(newValue)
   }
 });
 
@@ -192,6 +194,9 @@ const executePreparedAddFilesTransactions = async () => {
         <select v-model="config.chainId" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
           <option v-for="availableVVMintBlockchain in VVFactoryDeployments" :key="availableVVMintBlockchain.chainId" :value="availableVVMintBlockchain.chainId">{{ availableVVMintBlockchain.name }}</option>
         </select>
+        <div class="text-warning text-80" v-if="config.chainId != originalConfig.chainId">
+          When changin blockchain, you may need to clear browser cache.
+        </div>
       </div>
       <div>
         <label>Site title</label>
