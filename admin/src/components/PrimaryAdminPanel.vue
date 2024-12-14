@@ -181,7 +181,7 @@ const collectionOfCollectionTokenCreationForm = ref(null)
     <div class="collection-index" v-if="showCollectionCreationForm == false && showCollectionTokenCreationForm == false">
    
       <div v-if="staticFrontendLoaded && configFileInfos == null" class="not-configured text-90">
-        The <strong>VV Mint Artist Platform</strong> plugin has not yet been configured and is showing the default creator. <br /> Please go to the plugins tab to configure it with your own address.
+        The <strong>Mint Protocol Artist Platform</strong> plugin has not yet been configured and is showing the default creator. <br /> Please go to the plugins tab to configure it with your own address.
       </div>
 
       <div v-else-if="staticFrontendLoaded">

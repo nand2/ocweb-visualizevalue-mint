@@ -1,4 +1,4 @@
-# Visualizevalue Mint Frontend plugin for OCWebsite
+# Mint Protcol Frontend plugin for OCWebsite
 
 This project is a plugin for [OCWebsites](https://github.com/nand2/ocweb) (a `web3://` onchain CMS, homepage at `web3://ocweb.eth`)
 

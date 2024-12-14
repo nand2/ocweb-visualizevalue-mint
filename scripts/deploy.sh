@@ -57,11 +57,11 @@ ROOT_FOLDER=$(cd $(dirname $(readlink -f $0)) && cd .. && pwd)
 
 
 #
-# Local deployment: deploy the VV Mint factory
+# Local deployment: deploy the Mint Protocol factory
 #
 
 if [ "$CHAIN_ID" == "31337" ]; then
-  echo "Deploying the VV Mint factory"
+  echo "Deploying the Mint Protocol factory"
   exec 5>&1
   OUTPUT="$(forge script DeployVVMintScript --broadcast --private-key $PRIVATE_KEY --rpc-url $RPC_URL | tee >(cat - >&5))"
 fi
