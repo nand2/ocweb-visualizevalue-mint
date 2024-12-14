@@ -71,8 +71,8 @@ const decodeConfigFileContent = (fileContent) => {
   const decodedConfig = fileContent ? JSON.parse(new TextDecoder().decode(fileContent)) : {};
   return { ...defaultConfig, ...decodedConfig };
 }
-const config = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : defaultConfig)
-const originalConfig = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : defaultConfig)
+const config = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : {...defaultConfig})
+const originalConfig = ref(fileContent.value ? decodeConfigFileContent(fileContent.value) : {...defaultConfig})
 // When the file content is fetched, set the text
 watch(fileContent, (newValue) => {
   if(fileContentLoaded.value) {
