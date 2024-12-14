@@ -51,7 +51,7 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin, Ownable2
 
         AdminPanel[] memory adminPanels = new AdminPanel[](3);
         adminPanels[0] = AdminPanel({
-            title: "Mint Protocol platform",
+            title: "Mint Protocol",
             url: "/plugins/visualizevalue-mint/admin.umd.js",
             moduleForGlobalAdminPanel: ocWebAdminPlugin,
             panelType: AdminPanelType.Primary
@@ -74,7 +74,7 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin, Ownable2
                 name: "visualizeValueMint",
                 version: "0.1.1",
                 title: "Mint Protocol Artist Platform",
-                subTitle: "Create and show your 24h open edition NFTs with the Mint Protocol Artist Platform",
+                subTitle: "Create and display your 24h open edition NFTs with the Mint Protocol",
                 author: "Jalil (contracts && frontend) / Nand (plugin)",
                 homepage: "https://mint.vv.xyz/",
                 dependencies: dependencies,
