@@ -51,7 +51,7 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin, Ownable2
 
         AdminPanel[] memory adminPanels = new AdminPanel[](3);
         adminPanels[0] = AdminPanel({
-            title: "VV artist platform",
+            title: "Mint Protocol platform",
             url: "/plugins/visualizevalue-mint/admin.umd.js",
             moduleForGlobalAdminPanel: ocWebAdminPlugin,
             panelType: AdminPanelType.Primary
