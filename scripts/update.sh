@@ -164,16 +164,36 @@ if [ "$SECTION" == "theme-files" ]; then
   fi
   PLUGIN_THEME_WEB3_ADDRESS="web3://${PLUGIN_THEME_ADDRESS}:${CHAIN_ID}"
 
-  # Go to the theme folder
-  cd $ROOT_FOLDER/$THEME
-  # Build the theme
-  pnpm run generate
+  # # Go to the theme folder
+  # cd $ROOT_FOLDER/$THEME
+  # # Build the theme
+  # pnpm run generate
 
-  # Make a temporary folder where we prepare the upload
+  # Temporary while we have a fork
+  FORK_OUTPUT_FOLDER=
+  if [ "$THEME" == "mint-base" ]; then
+    cd $ROOT_FOLDER/../vizualizevalue-mint/
+    pnpm --filter @visualizevalue/mint-app-base generate
+    FORK_OUTPUT_FOLDER=$ROOT_FOLDER/../vizualizevalue-mint/app/base/.output/public
+  elif [ "$THEME" == "mint-zinc" ]; then
+    cd $ROOT_FOLDER/../vizualizevalue-mint/
+    pnpm --filter @visualizevalue/mint-theme-zinc generate
+    FORK_OUTPUT_FOLDER=$ROOT_FOLDER/../vizualizevalue-mint/app/themes/zinc/.playground/.output/public
+  else
+    echo "Unknown theme: $THEME"
+    exit 1
+  fi
   cd $ROOT_FOLDER
   rm -Rf $ROOT_FOLDER/dist
   mkdir -p dist
-  cp -R $THEME/.output/public/* dist
+  cp -R $FORK_OUTPUT_FOLDER/* dist
+  # End of temporary
+
+  # # Make a temporary folder where we prepare the upload
+  # cd $ROOT_FOLDER
+  # rm -Rf $ROOT_FOLDER/dist
+  # mkdir -p dist
+  # cp -R $THEME/.output/public/* dist
   # In index.html, we find the first <script> tag, we extract its URL, and we remove the tag.
   # We inject the contents of assets/mint-index-patch.html into the base index.html, just before the </body> tag, and within the patch, we replace NUXT_ENTRYPOINT_FILE by the extracted URL of the script tag.
   node -e "
