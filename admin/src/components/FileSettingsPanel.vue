@@ -194,8 +194,8 @@ const executePreparedAddFilesTransactions = async () => {
         <select v-model="config.chainId" class="form-select" :disabled="isLockedLoaded && isLocked || websiteVersion.locked || prepareAddFilesIsPending || addFilesIsPending">
           <option v-for="availableVVMintBlockchain in VVFactoryDeployments" :key="availableVVMintBlockchain.chainId" :value="availableVVMintBlockchain.chainId">{{ availableVVMintBlockchain.name }}</option>
         </select>
-        <div class="text-warning text-80" v-if="config.chainId != originalConfig.chainId">
-          When changin blockchain, you may need to clear browser cache.
+        <div class="text-warning text-80" style="margin-top: 0.2em" v-if="config.chainId != originalConfig.chainId">
+          When changing blockchain, you may need to clear browser cache to view the frontend.
         </div>
       </div>
       <div>
