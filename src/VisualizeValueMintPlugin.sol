@@ -72,7 +72,7 @@ contract VisualizeValueMintPlugin is ERC165, IVersionableWebsitePlugin, Ownable2
         return
             Infos({
                 name: "visualizeValueMint",
-                version: "0.1.1",
+                version: "0.1.2",
                 title: "Mint Protocol Artist Platform",
                 subTitle: "Create and display your 24h open edition NFTs with the Mint Protocol",
                 author: "Jalil (contracts && frontend) / Nand (plugin)",
